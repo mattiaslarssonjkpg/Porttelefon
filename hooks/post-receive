@@ -16,8 +16,8 @@
 #
 function help() {
   echo "Required config settings:"
-  echo " git config hooks.slack.webhook-url 'https://hooks.slack.com/services/...'"
-  echo " git config hooks.slack.channel 'general'"
+  echo " git config hooks.slack.webhook-url 'https://hooks.slack.com/services/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'"
+  echo " git config hooks.slack.channel 'github-porttelefon'"
   echo " git config hooks.slack.show-only-last-commit true #optional"
   echo " git config hooks.slack.show-full-commit true #optional"
   echo " git config hooks.slack.username 'git' #optional"
