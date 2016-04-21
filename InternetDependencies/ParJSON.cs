@@ -21,7 +21,7 @@ namespace IoTCore.Httprequest
          */
         public JsonObject ToJsonObject(String value) {
             JsonObject DeviceJson = new JsonObject();
-            DeviceJson.SetNamedValue(idKey, JsonValue.CreateStringValue(value);
+            DeviceJson.SetNamedValue(idKey, JsonValue.CreateStringValue(value));
 
             return DeviceJson;
         }

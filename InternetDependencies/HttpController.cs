@@ -56,9 +56,9 @@ namespace IoTCore.Httprequest
         public async void GetFromServer(JsonObject jsonObj, String apiKey, String serverAddress) {
             var myClient = new HttpClient();
 
-            StringContent queryString = new StringContent(_data);
+            //StringContent queryString = new StringContent(_data);
             //myClient.PostAsync(_serveraddress, _data);
-            HttpResponseMessage response = await myClient.GetAsync(_serveraddress);
+            HttpResponseMessage response = await myClient.GetAsync(serverAddress);
             
             // This tells if you if the client-server communication is actually using HTTP/2
             Debug.WriteLine(response.Content.ReadAsStringAsync());
