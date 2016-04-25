@@ -440,6 +440,7 @@ namespace Porttelefon.Bluetooth
 
         private async void PairButton_Click(object sender, RoutedEventArgs e)
         {
+            
             DeviceInformationDisplay deviceInfoDisp = resultsListView.SelectedItem as DeviceInformationDisplay;
 
             if (deviceInfoDisp != null)
