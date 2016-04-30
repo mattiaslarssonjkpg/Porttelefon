@@ -34,8 +34,8 @@ namespace IoTCore.RFID_Constans
             PCD_SoftReset = 0x0F            /* resets the MFRC522 */
         };
 
-        public enum PCD_Register {      /* Page 0: Command and status */
-                                        /* 0x00	 reserved for future use */
+        public enum PCD_Register { /* Page 0: Command and status */
+                                   /* 0x00 reserved for future use */
             CommandReg = 0x01,     /* starts and stops command execution */
             ComIEnReg = 0x02,      /* enable and disable interrupt request control bits */
             DivIEnReg = 0x03,      /* enable and disable interrupt request control bits */
@@ -50,10 +50,10 @@ namespace IoTCore.RFID_Constans
             ControlReg = 0x0C,     /* miscellaneous control registers */
             BitFramingReg = 0x0D,  /* adjustments for bit-oriented frames */
             CollReg = 0x0E,        /* bit position of the first bit-collision detected on the RF interface */
-                                        /*	0x0F	reserved for future use */
+                                   /* 0x0F reserved for future use */
 
             /* Page 1: Command */
-                                        /* 	0x10  reserved for future use */
+                                   /* 0x10 reserved for future use */
             ModeReg = 0x11,        /* defines general modes for transmitting and receiving */
             TxModeReg = 0x12,      /* defines transmission data rate and framing */
             RxModeReg = 0x13,      /* defines reception data rate and framing */
@@ -63,20 +63,20 @@ namespace IoTCore.RFID_Constans
             RxSelReg = 0x17,       /* selects internal receiver settings */
             RxThresholdReg = 0x18, /* selects thresholds for the bit decoder */
             DemodReg = 0x19,       /* defines demodulator settings */
-                                        /*	0x1A	reserved for future use */
-                                        /* 	0x1B  reserved for future use */
+                                   /* 0x1A reserved for future use */
+                                   /* 0x1B reserved for future use */
             MfTxReg = 0x1C,        /* controls some MIFARE communication transmit parameters */
             MfRxReg = 0x1D,        /* controls some MIFARE communication receive parameters */
-                                        /* 	0x1E  reserved for future use */
+                                   /* 0x1E reserved for future use */
             SerialSpeedReg = 0x1F, /* selects the speed of the serial UART interface */
 
             /* Page 2: Configuration */
-                                            /* 0x20  reserved for future use */
+                                       /* 0x20 reserved for future use */
             CRCResultRegH = 0x21,      /* shows the MSB and LSB values of the CRC calculation */
             CRCResultRegL = 0x22,
-                                            /* 0x23	reserved for future use */
+                                       /* 0x23 reserved for future use */
             ModWidthReg = 0x24,        /* controls the ModWidth setting? */
-                                            /* 0x25	reserved for future use */
+                                       /* 0x25 reserved for future use */
             RFCfgReg = 0x26,           /* configures the receiver gain */
             GsNReg = 0x27,             /* selects the conductance of the antenna driver pins TX1 and TX2 for modulation */
             CWGsPReg = 0x28,           /* defines the conductance of the p-driver output during periods of no modulation */
@@ -89,7 +89,7 @@ namespace IoTCore.RFID_Constans
             TCounterValueRegL = 0x2F,
 
             /* Page 3: Test Registers */
-                                        /* 0x30  reserved for future use */
+                                   /* 0x30 reserved for future use */
             TestSel1Reg = 0x31,    /* general test signal configuration */
             TestSel2Reg = 0x32,    /* general test signal configuration */
             TestPinEnReg = 0x33,   /* enables pin output driver on pins D1 to D7 */
@@ -101,10 +101,10 @@ namespace IoTCore.RFID_Constans
             TestDAC1Reg = 0x39,    /* defines the test value for TestDAC1 */
             TestDAC2Reg = 0x3A,    /* defines the test value for TestDAC2 */
             TestADCReg = 0x3B      /* shows the value of ADC I and Q channels */
-                                        /* 	0x3C	reserved for production tests */
-                                        /*	0x3D	reserved for production tests */
-                                        /*  0x3E	reserved for production tests */
-                                        /*  0x3F	reserved for production tests */
+                                   /* 0x3C reserved for production tests */
+                                   /* 0x3D reserved for production tests */
+                                   /* 0x3E reserved for production tests */
+                                   /* 0x3F reserved for production tests */
         };
 
         /* MFRC522 RxGain[2:0] masks, defines the receiver's signal voltage gain factor (on the PCD). */
@@ -182,5 +182,12 @@ namespace IoTCore.RFID_Constans
             STATUS_CRC_WRONG,           /* The CRC_A does not match */
             STATUS_MIFARE_NACK = 0xff   /* A MIFARE PICC responded with NAK. */
         };
+
+        public struct Uid {
+            byte size; //Number of bytes in the UID. 4, 7 or 10.  
+            byte[] uidByte;
+            byte sak;   //The SAK(Select acknowledge) byte returned 
+                        //from the PICC after successful selection. 
+        }
     }
 }
