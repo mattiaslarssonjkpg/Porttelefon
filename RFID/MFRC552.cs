@@ -15,7 +15,7 @@ using System.Diagnostics;
 
 namespace IoTCore {
     class MFRC552 {
-        private const Byte DATA_COMMAND_PIN = 0; /* We use GPIO 22 since it's conveniently near the SPI pins */
+        private const Byte DATA_COMMAND_PIN = 22; /* We use GPIO 22 since it's conveniently near the SPI pins */
         private const String READ = "readreg", WRITE = "writereg";
 
         private GpioController _gpioController;
@@ -40,7 +40,7 @@ namespace IoTCore {
                 _resetPin.Write(GpioPinValue.High);
                 _resetPin.SetDriveMode(GpioPinDriveMode.Output);
                 
-                var varSpiCon = new SpiConnectionSettings(DATA_COMMAND_PIN);
+                var varSpiCon = new SpiConnectionSettings(0);
 
                 /* Set the SPI buss to 1 Mhz */
                 varSpiCon.ClockFrequency = 1000000;
