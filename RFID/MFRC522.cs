@@ -24,10 +24,6 @@ namespace IoTCore {
         private SpiDevice _spiDevice;
         private GpioPin _resetPin;
         public Uid uid = new Uid();
-        public const Byte MI_OK = 0;
-        public const Byte MI_NOTAGERR = 1;
-        public const Byte MI_ERR = 2;
-        public const Byte MAX_LEN = 16;
 
         #region InitFunctions
         /**
@@ -66,16 +62,15 @@ namespace IoTCore {
                 throw new Exception("SPI Initialization Failed", ex);
             }
 
-            Reset();
-
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.TModeReg, 0x80);      /* When communicating with a PICC we need a timeout if something goes wrong. */
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.TPrescalerReg, 0xA9); /* f_timer = 13.56 MHz / (2*TPreScaler+1) where TPreScaler = [TPrescaler_Hi:TPrescaler_Lo]. */
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.TReloadRegH, 0x03);   /* TPrescaler_Hi are the four low bits in TModeReg. TPrescaler_Lo is TPrescalerReg. */
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.TReloadRegL, 0xE8);   /* TAuto=1; timer starts automatically at the end of the transmission in all communication modes at all speeds */
-            /* TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25ms. */
-            /* Reload timer with 0x3E8 = 1000, ie 25ms before timeout. */
-            
-            
+                                                                                             /* TPreScaler = TModeReg[3..0]:TPrescalerReg, ie 0x0A9 = 169 => f_timer=40kHz, ie a timer period of 25ms. */                                                                               /* Force 100% ASK modulation */
+            TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.TxASKReg, 0x40);
+            /* Set CRC to 0x6363 */
+            TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.ModeReg, 0x3D);
+            PCD_AntennaOn();
         }
 
         /**
@@ -90,30 +85,13 @@ namespace IoTCore {
          *                  //System.Threading.Tasks.Task.Delay(50).Wait();
          */
 
-        public void Reset()
-        {
-
-            _resetPin.Write(GpioPinValue.Low);
+        public void Reset() {
+            TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.CommandReg, (Byte)MFRC522Registermap.PCD_Command.PCD_SoftReset);
             System.Threading.Tasks.Task.Delay(50).Wait();
-            _resetPin.Write(GpioPinValue.High);
-            System.Threading.Tasks.Task.Delay(200).Wait(); 
+            while (((TransferToSpi(READ, (Byte)MFRC522Registermap.PCD_Register.CommandReg, 0x00)[1] )  & (1 << 4)) != 0);
 
-            /* Software reset*/
-            TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.CommandReg, (Byte)MFRC522Registermap.PCD_Command.PCD_SoftReset);	// Issue the SoftReset command.
-            System.Threading.Tasks.Task.Delay(200).Wait(); //just to be sure we dont 
-
-            /* Force 100% ASK modulation */
-            TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.TxASKReg, 0x40);
-
-            /* Set CRC to 0x6363 */
-            TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.ModeReg, 0x3D);
-
-            /* Enable antenna */
-            TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.TxControlReg, 0x03);
-
-            Debug.WriteLine("Finnished");
         }
-
+        
         /**
         * FUNCTION NAME : TransferToSpi
         * DESCRIPTION   : This function write and read data over the SPI bus
@@ -143,7 +121,7 @@ namespace IoTCore {
         }
 
 
-        private void PCD_ReadRegister(Byte reg, Byte count, ref List<Byte> values, Byte rxAlign) {
+        private void PCD_ReadRegister(Byte reg, Byte count, ref Byte[] values, Byte rxAlign) {
             ////< Only bit positions rxAlign..7 in values[0] are updated.
             ////< Byte array to store the values in. - /< The number of bytes to read 
             ////< The register to read from. One of the PCD_Register enums.
@@ -151,7 +129,7 @@ namespace IoTCore {
                 return;
             
             Byte address = (Byte)(0x80 | (reg & 0x7E)); // MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
-             
+            Byte index = 0;
             for(Byte idx = 0; idx < count; ++idx) {
 
                 if (idx == 0 && rxAlign != 0)
@@ -166,12 +144,13 @@ namespace IoTCore {
                     // Read value and tell that we want to read the same address again.
                     Byte value = TransferToSpi(READ, address, 0x00)[1];
                     // Apply mask to both current value of values[0] and the new data in value.
-                    values.Add((Byte)((values[idx] & ~mask) | (value & mask)));
+                    values[0] = ((Byte)((values[idx] & ~mask) | (value & mask)));
                 }
                 else
-                    values.Add(TransferToSpi(READ, address, 0x00)[1]);
+                    values[idx] = (TransferToSpi(READ, address, 0x00)[1]);
+                index = idx;
             }
-            values.Add(TransferToSpi(READ, address, 0x00)[1]);
+           // values[index + 1] = (TransferToSpi(READ, address, 0x00)[1]);
         } // End PCD_ReadRegister()
 
 
@@ -204,8 +183,8 @@ namespace IoTCore {
          * Sets the bits given in mask in register reg.
          */
         private void PCD_SetRegisterBitMask(Byte reg,  ///< The register to update. One of the PCD_Register enums.
-                                        Byte mask   ///< The bits to set.
-                                    ){
+                                        Byte mask){ ///< The bits to set.
+
             Byte tmp;
             tmp = TransferToSpi(READ, reg, 0x00)[1];
             TransferToSpi(WRITE, reg, (Byte)(tmp | mask));         // set bit mask
@@ -214,9 +193,9 @@ namespace IoTCore {
         /**
          * Clears the bits given in mask from register reg.
          */
-        private void PCD_ClearRegisterBitMask(Byte reg,    ///< The register to update. One of the PCD_Register enums.
-                                              Byte mask   ///< The bits to clear.
-                                      ){
+        private void PCD_ClearRegisterBitMask(Byte reg,     ///< The register to update. One of the PCD_Register enums.
+                                              Byte mask) {  ///< The bits to clear.
+                                      
             Byte tmp;
             tmp = TransferToSpi(READ, reg, 0x00)[1];
             TransferToSpi(WRITE, reg, ((Byte)(tmp & (~mask))));      // clear bit mask
@@ -278,7 +257,7 @@ namespace IoTCore {
          *                 @return STATUS_OK on success, STATUS_??? otherwise.
          */
 
-        public Byte CalulateCRC(List<Byte> Indata, ref List<Byte> result) {
+        public Byte CalulateCRC(Byte[] Indata, ref Byte[] result) {
             
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.CommandReg, (Byte)MFRC522Registermap.PCD_Command.PCD_Idle);        /* Stop any active command. */
 
@@ -304,8 +283,8 @@ namespace IoTCore {
             
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.CommandReg, (Byte)MFRC522Registermap.PCD_Command.PCD_Idle);        /* Stop calculating CRC for new content in the FIFO. */
 
-            result.Add(TransferToSpi(READ, (Byte)MFRC522Registermap.PCD_Register.CRCResultRegL, 0x00)[1]);
-            result.Add(TransferToSpi(READ, (Byte)MFRC522Registermap.PCD_Register.CRCResultRegH, 0x00)[1]);
+            result[0] = (TransferToSpi(READ, (Byte)MFRC522Registermap.PCD_Register.CRCResultRegL, 0x00)[1]);
+            result[1] = (TransferToSpi(READ, (Byte)MFRC522Registermap.PCD_Register.CRCResultRegH, 0x00)[1]);
 
             return (Byte)MFRC522Registermap.StatusCode.STATUS_OK;
         }
@@ -322,24 +301,24 @@ namespace IoTCore {
 
 
         public Byte MIFARE_Read(Byte blockAddr, 	    /* MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The first page to return data from. */
-								ref List<Byte> buffer,	/* The buffer to store the data in */
+								ref Byte[] buffer,	/* The buffer to store the data in */
 								ref Byte bufferSize){   /* Buffer size, at least 18 bytes. Also number of bytes returned if STATUS_OK. */
 
             if (buffer == null || bufferSize < 18)
                 return (Byte)MFRC522Registermap.StatusCode.STATUS_NO_ROOM;
 
-            List<Byte> recvData = new List<Byte> { };
-            recvData.Add((Byte) MFRC522Registermap.PICC_Command.PICC_CMD_MF_READ);
-            recvData.Add(blockAddr);
+            //List<Byte> recvData = new List<Byte> { };
+            buffer[0] = ((Byte) MFRC522Registermap.PICC_Command.PICC_CMD_MF_READ);
+            buffer[1] = (blockAddr);
             // Calculate CRC_A
-            Byte result = CalulateCRC(recvData, ref buffer);
+            Byte result = CalulateCRC(buffer, ref buffer);
             
             if (result != (Byte)MFRC522Registermap.StatusCode.STATUS_OK)
                 return result;
-            
 
+            Byte validBits = 0; //dummy data
             // Transmit the buffer and receive the response, validate CRC_A.
-            return PCD_TransceiveData(ref buffer, 4, ref buffer, bufferSize, 0, 0, true);
+            return PCD_TransceiveData(ref buffer, 4, ref buffer, ref bufferSize, ref validBits, 0, true);
         }
         #endregion
 
@@ -352,18 +331,18 @@ namespace IoTCore {
         * NOTE          : Note done yet... Need more work
         */
         public byte MIFARE_Ultralight_Write(Byte blockAddr, 		/* The page (2-15) to write to. */
-                                            List<Byte> writeData,   /* Buffer size, must be at least 4 bytes. Exactly 4 bytes are written. */
+                                            Byte[] writeData,   /* Buffer size, must be at least 4 bytes. Exactly 4 bytes are written. */
                                             byte bufferSize) {  
 
             if (writeData == null || bufferSize < 4)
                 return (byte)MFRC522Registermap.StatusCode.STATUS_INVALID;
 
-            List<Byte> buffer = new List<Byte> { };
+            Byte[] buffer = new Byte[6];
             byte result;
-            buffer.Add((Byte)MFRC522Registermap.PICC_Command.PICC_CMD_MF_WRITE);
-            buffer.Add(blockAddr);
-            foreach (var Bytes in writeData)
-                buffer.Add(Bytes);
+            buffer[0] = ((Byte)MFRC522Registermap.PICC_Command.PICC_CMD_MF_WRITE);
+            buffer[1] = (blockAddr);
+            for (var idx = 0; idx < writeData.Length; ++idx)
+                buffer[idx + 2] = writeData[idx];
 
             result = PCD_MIFARE_Transceive(ref buffer, 6, true);
 
@@ -376,11 +355,11 @@ namespace IoTCore {
 
         #region PDC_MIFARE_Trasceive
         private Byte PCD_MIFARE_Transceive(
-                ref List<Byte> sendData,	/* Pointer to the data to transfer to the FIFO. Do NOT include the CRC_A */
+                ref Byte[] sendData,	/* Pointer to the data to transfer to the FIFO. Do NOT include the CRC_A */
                 Byte sendLen,
 				bool acceptTimeout) {   /* True => A timeout is also success */
 
-            List<Byte> cmdBuffer = new List<Byte> { };
+            Byte[] cmdBuffer = new Byte[2];
             Byte result;
             
 
@@ -436,13 +415,13 @@ namespace IoTCore {
          */
         public bool PICC_IsNewCardPresent()
         {
-            List<byte> bufferATQA = new List<byte> { };
-            byte bufferSize = 2;
+            Byte[] bufferATQA = new Byte[2];
+            Byte bufferSize = (Byte)bufferATQA.Length;
 
-            byte result = (byte)(PICC_RequestA(ref bufferATQA, ref bufferSize));
+            Byte result = (byte)(PICC_RequestA(ref bufferATQA, ref bufferSize));
             
             bool b =  (result == (Byte)MFRC522Registermap.StatusCode.STATUS_OK || result == (Byte)MFRC522Registermap.StatusCode.STATUS_COLLISION);
-            Debug.WriteLine(b);
+            //Debug.WriteLine(b);
             return b;
         } // End PICC_IsNewCardPresent()
         #endregion
@@ -465,8 +444,8 @@ namespace IoTCore {
         #endregion
 
         #region PICC_RequestA
-        private byte PICC_RequestA(ref List<byte> bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
-								   ref byte bufferSize) {	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
+        private byte PICC_RequestA(ref Byte[] bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
+								   ref Byte bufferSize) {	///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
 										
             return PICC_REQA_or_WUPA((Byte)MFRC522Registermap.PICC_Command.PICC_CMD_REQA, ref bufferATQA, ref bufferSize);
         } // End PICC_RequestA()
@@ -475,11 +454,10 @@ namespace IoTCore {
 
         #region PICC_REQA_or_WUPA
         private Byte PICC_REQA_or_WUPA(Byte command,    		    ///< The command to send - PICC_CMD_REQA or PICC_CMD_WUPA
-									   ref List<Byte> bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
+									   ref Byte[] bufferATQA,	///< The buffer to store the ATQA (Answer to request) in
 									   ref Byte bufferSize) {       ///< Buffer size, at least two bytes. Also number of bytes returned if STATUS_OK.
 
-            List<Byte> com = new List<Byte> { };
-            com.Add(command);								
+            Byte[] com = { command };							
             Byte validBits, status;
 
             if (bufferATQA == null || bufferSize < 2) // The ATQA response is 2 bytes long.
@@ -488,7 +466,7 @@ namespace IoTCore {
             PCD_ClearRegisterBitMask((Byte)MFRC522Registermap.PCD_Register.CollReg, 0x80);        
             // ValuesAfterColl=1 => Bits received after collision are cleared.
             validBits = 7;  // For REQA and WUPA we need the short frame format - transmit only 7 bits of the last (and only) byte. TxLastBits = BitFramingReg[2..0]
-            status = PCD_TransceiveData(ref com, 1, ref bufferATQA, bufferSize, validBits, 0, false);
+            status = PCD_TransceiveData(ref com, 1, ref bufferATQA, ref bufferSize, ref validBits, 0, true);
           
             if (status != (Byte)MFRC522Registermap.StatusCode.STATUS_OK)
                 return status;
@@ -501,11 +479,11 @@ namespace IoTCore {
         #endregion
 
         #region PCD_TransceiveData
-        private Byte PCD_TransceiveData(ref List<byte> sendData,	///< Pointer to the data to transfer to the FIFO.
+        private Byte PCD_TransceiveData(ref byte[] sendData,	///< Pointer to the data to transfer to the FIFO.
                                         Byte sendLen,
-										ref List<byte> backData,	///< NULL or pointer to buffer if data should be read back after executing the command.
-										Byte backLen,		        ///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
-										Byte validBits,	            ///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits. Default NULL.
+										ref byte[] backData,	///< NULL or pointer to buffer if data should be read back after executing the command.
+										ref Byte backLen,		        ///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
+										ref Byte validBits,	            ///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits. Default NULL.
 										Byte rxAlign,		        ///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
 										bool checkCRC) {            ///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
 
@@ -524,29 +502,28 @@ namespace IoTCore {
          *
          * @return STATUS_OK on success, STATUS_??? otherwise.
          */
-        private Byte PCD_CommunicateWithPICC(
+     private Byte PCD_CommunicateWithPICC(
                 Byte command,               ///< The command to execute. One of the PCD_Command enums.
                 Byte waitIRq,               ///< The bits in the ComIrqReg register that signals successful completion of the command.
-                ref List<byte> sendData,    ///< Pointer to the data to transfer to the FIFO
+                ref Byte[] sendData,        ///< Pointer to the data to transfer to the FIFO
                 Byte sendLen,
-                ref List<Byte> backData,    ///< NULL or pointer to buffer if data should be read back after executing the command.
+                ref Byte[] backData,        ///< NULL or pointer to buffer if data should be read back after executing the command.
                 ref Byte backLen,           ///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
                 ref Byte validBits,         ///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits.
                 Byte rxAlign,               ///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
                 bool checkCRC) {            ///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
-
-            List<Byte> result = new List<Byte> { };
-            Byte n, _validBits = 7;
+            
+            Byte n, _validBits = 0;
 
             // Prepare values for BitFramingReg
-            Byte txLastBits = (Byte)(validBits != 0 ? validBits : 0);
-            Byte bitFraming = (Byte)((rxAlign << 4) + txLastBits);      // RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
+            //Byte txLastBits = (Byte)(validBits != 0 ? validBits : 0);   //valid bits is not defiend set 0
+            Byte bitFraming = (Byte)((rxAlign << 4) + validBits);      // RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.CommandReg, (Byte)MFRC522Registermap.PCD_Command.PCD_Idle);            // Stop any active command.
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.ComIrqReg, 0x7F);                 // Clear all seven interrupt request bits
             PCD_SetRegisterBitMask((Byte)MFRC522Registermap.PCD_Register.FIFOLevelReg, 0x80);         // FlushBuffer = 1, FIFO initialization
-            foreach(var b in sendData)
-                TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.FIFODataReg, b);  // Write sendData to the FIFO
+            for(int ix = 0; ix < sendLen; ++ix)
+                TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.FIFODataReg, sendData[ix]);  // Write sendData to the FIFO
 
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.BitFramingReg, bitFraming);       // Bit adjustments
             TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.CommandReg, command);             // Execute the command
@@ -559,7 +536,7 @@ namespace IoTCore {
             UInt16 i = 2000;
             while (true) {
                 n = TransferToSpi(READ, (Byte)MFRC522Registermap.PCD_Register.ComIrqReg, 0x00)[1];    // ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
-                //Debug.WriteLine(n);
+                Debug.WriteLine(n);
                 if ((n & waitIRq) != 0) // One of the interrupts that signal success has been set.
                     break;
                 if((n & 0x01) != 0)
@@ -609,7 +586,7 @@ namespace IoTCore {
 
 
                 // Verify CRC_A - do our own calculation and store the control in controlBuffer.
-                List<Byte> controlBuffer = new List<Byte> { };
+                Byte[] controlBuffer = new Byte[2];
                 Byte status = CalulateCRC(backData, ref controlBuffer);
                 if (status != (Byte)MFRC522Registermap.StatusCode.STATUS_OK)
                     return status;
@@ -648,10 +625,9 @@ namespace IoTCore {
         #endregion
 
         #region PICC_Select
-        /*
-        public List<byte> PICC_Select(Uid uid,			///< Pointer to Uid struct. Normally output, but can also be used to supply a known UID.
-								      byte validBits){    ///< The number of known UID bits supplied in *uid. Normally 0. If set you must also supply uid->size.
-            List<byte> result = new List<byte> { };
+        
+        public Byte PICC_Select(ref Uid uid,		    ///< Pointer to Uid struct. Normally output, but can also be used to supply a known UID.
+						        byte validBits){    ///< The number of known UID bits supplied in *uid. Normally 0. If set you must also supply uid->size.
 
             bool uidComplete;
             bool selectDone;
@@ -664,9 +640,9 @@ namespace IoTCore {
             byte[] buffer = new byte[9];    // The SELECT/ANTICOLLISION commands uses a 7 byte standard frame + 2 bytes CRC_A
             byte bufferUsed;                // The number of bytes used in the buffer, ie the number of bytes to transfer to the FIFO.
             byte rxAlign;                   // Used in BitFramingReg. Defines the bit position for the first bit received.
-            byte txLastBits;                // Used in BitFramingReg. The number of valid bits in the last transmitted byte. 
-            byte responseBuffer;
-            byte responseLength;
+            byte txLastBits = 0;                // Used in BitFramingReg. The number of valid bits in the last transmitted byte. 
+            byte[] responseBuffer = new byte[2];
+            byte responseLength = 0, /*responseBuffer,*/ result;
 
             // Description of buffer structure:
             //		Byte 0: SEL 				Indicates the Cascade Level: PICC_CMD_SEL_CL1, PICC_CMD_SEL_CL2 or PICC_CMD_SEL_CL3
@@ -691,11 +667,9 @@ namespace IoTCore {
             //						3			uid6	uid7	uid8	uid9
 
             // Sanity checks
-            if (validBits > 80)
-            {
-                result.Add((Byte)MFRC522Registermap.StatusCode.STATUS_INVALID);
-                return result;
-            }
+            if (validBits > 80)    
+                return (Byte)MFRC522Registermap.StatusCode.STATUS_INVALID;
+            
 
             // Prepare MFRC522
             PCD_ClearRegisterBitMask((Byte)MFRC522Registermap.PCD_Register.CollReg, 0x80);        // ValuesAfterColl=1 => Bits received after collision are cleared.
@@ -725,8 +699,7 @@ namespace IoTCore {
                         break;
 
                     default:
-                        result.Add((Byte)MFRC522Registermap.StatusCode.STATUS_INTERNAL_ERROR);
-                        return result;
+                        return (Byte)MFRC522Registermap.StatusCode.STATUS_INTERNAL_ERROR;
                 }
 
                 // How many UID bits are known in this Cascade Level?
@@ -770,28 +743,26 @@ namespace IoTCore {
                                           // Calculate BCC - Block Check Character
                         buffer[6] = (byte)(buffer[2] ^ buffer[3] ^ buffer[4] ^ buffer[5]);
                         // Calculate CRC_A
-                        result = CalulateCRC(buffer); //, 7, &buffer[7]
-                        if (result[0] != (byte)MFRC522Registermap.StatusCode.STATUS_OK)
+                        result = CalulateCRC(buffer, ref buffer); //, 7, &buffer[7]
+                        if (result != (byte)MFRC522Registermap.StatusCode.STATUS_OK)
                         {
                             return result;
                         }
                         txLastBits = 0; // 0 => All 8 bits are valid.
                         bufferUsed = 9;
                         // Store response in the last 3 bytes of buffer (BCC and CRC_A - not needed after tx)
-                        responseBuffer = buffer[6];
+                        responseBuffer[0] = buffer[6];
                         responseLength = 3;
                     }
-                    else
-                    {   // This is an ANTICOLLISION.
+                    else{// This is an ANTICOLLISION.
                         txLastBits = (byte)(currentLevelKnownBits % 8);
                         count = (byte)(currentLevelKnownBits / 8);  // Number of whole bytes in the UID part.
                         index = (byte)(2 + count);                  // Number of whole bytes: SEL + NVB + UIDs
                         buffer[1] = (byte)((index << 4) + txLastBits);  // NVB - Number of Valid Bits
                         bufferUsed = (byte)(index + (txLastBits != 0 ? 1 : 0));
                         // Store response in the unused part of buffer
-                        responseBuffer = buffer[index];
-                        responseLength = (byte)(Marshal.SizeOf(buffer) - index);
-                        
+                        responseBuffer[0] = buffer[index];
+                        responseLength = (byte)((buffer.Length) - index);
                     }
 
                     // Set bit adjustments
@@ -799,8 +770,10 @@ namespace IoTCore {
                     TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.BitFramingReg, (byte)((rxAlign << 4) + txLastBits));  // RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 
                     // Transmit the buffer and receive the response.
-                    result = PCD_TransceiveData(buffer, bufferUsed, responseBuffer, &responseLength, &txLastBits, rxAlign);
-                    if (result[0] == (byte)MFRC522Registermap.StatusCode.STATUS_COLLISION)
+                    result = PCD_TransceiveData(ref buffer, bufferUsed, ref responseBuffer, ref responseLength, ref txLastBits, rxAlign, true);
+                    //ref byte[] sendData, Byte sendLen, ref byte[] backData, ref Byte backLen, ref Byte validBits, Byte rxAlign, bool checkCRC
+
+                    if (result == (byte)MFRC522Registermap.StatusCode.STATUS_COLLISION)
                     { // More than one PICC in the field => collision.
                         byte valueOfCollReg = TransferToSpi(READ, (byte)MFRC522Registermap.PCD_Register.CollReg, 0x00)[1]; // CollReg[7..0] bits are: ValuesAfterColl reserved CollPosNotValid CollPos[4:0]
                         if ((valueOfCollReg & 0x20) != 0)
@@ -819,7 +792,7 @@ namespace IoTCore {
                         // Choose the PICC with the bit set.
                         currentLevelKnownBits = collisionPos;
                         count = (byte)((currentLevelKnownBits - 1) % 8); // The bit to modify
-                        index = 1 + (currentLevelKnownBits / 8) + (count ? 1 : 0); // First byte is index 0.
+                        index = (Byte)(1 + (currentLevelKnownBits / 8) + (count != 0  ? 1 : 0)); // First byte is index 0.
                         buffer[index] |= (byte)(1 << count);
                     }
                     else if (result != (byte)MFRC522Registermap.StatusCode.STATUS_OK)
@@ -858,7 +831,7 @@ namespace IoTCore {
                     return (byte)MFRC522Registermap.StatusCode.STATUS_ERROR;
                 
                 // Verify CRC_A - do our own calculation and store the control in buffer[2..3] - those bytes are not needed anymore.
-                result = PCD_CalculateCRC(responseBuffer, 1, &buffer[2]);
+                result = CalulateCRC(responseBuffer, ref buffer);
                 if (result != (byte)MFRC522Registermap.StatusCode.STATUS_OK)
                 {
                     return result;
@@ -867,7 +840,7 @@ namespace IoTCore {
                 {
                     return (byte)MFRC522Registermap.StatusCode.STATUS_CRC_WRONG;
                 }
-                if (responseBuffer[0] & 0x04)
+                if ((responseBuffer[0] & 0x04) != 0)
                 { // Cascade bit set - UID not complete yes
                     cascadeLevel++;
                 }
@@ -883,8 +856,6 @@ namespace IoTCore {
 
             return (byte)MFRC522Registermap.StatusCode.STATUS_OK;
         } // End PICC_Select()
-        */
         #endregion
-
     }
 }

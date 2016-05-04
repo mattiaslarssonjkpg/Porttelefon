@@ -19,7 +19,8 @@
 
 namespace IoTCore.RFID_Constans
 {
-    class MFRC522Registermap { 
+    class MFRC522Registermap {
+        public const byte FIFO_BUFFER = 64;
         /* MFRC522 commands. Described in chapter 10 of the datasheet. */
         public enum PCD_Command {
             PCD_Idle = 0x00,                /* no action, cancels current command execution */
