@@ -128,37 +128,17 @@ namespace IoTCore {
 
         #region PCD_ReadRegister
 
-        private void PCD_ReadRegister(byte reg, byte count, ref byte[] values, byte rxAlign)
-        {
+        private void PCD_ReadRegister(byte reg, byte count, ref byte[] values, byte rxAlign) {
             if (count == 0)
                 return;
-
 
             byte address = (Byte)(0x80 | (reg & 0x7E)); // MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
             byte index = 0; // Index in values array.
 
-            while (index < count)
-            {
-                if (index == 0 && rxAlign != 0)
-                { // Only update bit positions rxAlign..7 in values[0]
-                  // Create bit mask for bit positions rxAlign..7
-                    byte mask = 0;
-                    for (byte i = rxAlign; i <= 7; i++)
-                    {
-                        mask |= (Byte)(1 << i);
-                    }
-                    // Read value and tell that we want to read the same address again.
-                    byte value = values[index] = TransferToSpi(READ, reg, 0)[1];
-                    // Apply mask to both current value of values[0] and the new data in value.
-                    values[0] = (Byte)((values[index] & ~mask) | (value & mask));
-                }
-                else
-                { // Normal case
-                    values[index] = values[index] = TransferToSpi(READ, reg, 0)[1]; // Read value and tell that we want to read the same address again.
-                }
+            while (index < count) { 
+                values[index] = values[index] = TransferToSpi(READ, reg, 0)[1]; // Read value and tell that we want to read the same address again.
                 index++;
             }
-            //values[index] = TransferToSpi(READ, reg, 0)[1]; // Read the final byte. Send 0 to stop reading.
             int x = 0; //Just for setting breakpoint
         } // End PCD_ReadRegister()
         #endregion 
@@ -592,7 +572,7 @@ namespace IoTCore {
             UInt16 i = 2000;
             while (true) {
                 n = TransferToSpi(READ, (Byte)MFRC522Registermap.PCD_Register.ComIrqReg, 0x00)[1];    // ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
-                Debug.WriteLine(n);
+                //Debug.WriteLine(n);
                 if ((n & waitIRq) != 0) // One of the interrupts that signal success has been set.
                     break;
                 if((n & 0x01) != 0)
@@ -650,6 +630,36 @@ namespace IoTCore {
             }
             return (Byte)MFRC522Registermap.StatusCode.STATUS_OK;
         } // End PCD_CommunicateWithPICC()
+
+        #endregion
+
+        #region PICC_GetTypeName
+
+        public String PICC_GetTypeName(Byte piccType) {
+            switch (piccType){
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_ISO_14443_4:
+                    return "PICC compliant with ISO/IEC 14443-4";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_ISO_18092:
+                    return "PICC compliant with ISO/IEC 18092 (NFC)";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_MIFARE_MINI:
+                    return "MIFARE Mini, 320 bytes";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_MIFARE_1K:
+                    return "MIFARE 1KB";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_MIFARE_4K:
+                    return "MIFARE 4KB";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_MIFARE_UL:
+                    return "MIFARE Ultralight or Ultralight C";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_MIFARE_PLUS:
+                    return "MIFARE Plus";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_TNP3XXX:
+                    return "MIFARE TNP3XXX";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_NOT_COMPLETE:
+                    return "SAK indicates UID is not complete.";
+                case (Byte)MFRC522Registermap.PICC_Type.PICC_TYPE_UNKNOWN:
+                default:
+                    return "Unknown type";
+            }
+        } // End PICC_GetTypeName()
 
         #endregion
 
@@ -805,7 +815,7 @@ namespace IoTCore {
                         rxAlign = txLastBits; // Having a separate variable is overkill. But it makes the next line easier to read.
                         TransferToSpi(WRITE, (Byte)MFRC522Registermap.PCD_Register.BitFramingReg, (Byte)((rxAlign << 4) + txLastBits));  // RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 
-                        Debug.WriteLine("Test: " + (Byte)((rxAlign << 4) + txLastBits));
+                        //Debug.WriteLine("Test: " + (Byte)((rxAlign << 4) + txLastBits));
                         // Transmit the buffer and receive the response.
                         result = PCD_TransceiveData(ref buffer, bufferUsed, ref responseBuffer, ref responseLength, ref txLastBits, rxAlign, false);
                         //ref byte[] sendData, Byte sendLen, ref byte[] backData, ref Byte backLen, ref Byte validBits, Byte rxAlign, bool checkCRC
@@ -826,10 +836,10 @@ namespace IoTCore {
                         for(int a = 0; a < responseBuffer.Length; ++a) { 
                             responseBuffer[a] = buffer[a + index];
                         }
-                        Debug.WriteLine("ANTICOLLISION: ");
+                        /*Debug.WriteLine("ANTICOLLISION: ");
                         for (int a = 0; a < responseBuffer.Length; ++a){
                             Debug.WriteLine(responseBuffer[a]);
-                        }
+                        }*/
                         //Byte x = (Byte)(buffer.Length - index);
                         responseLength = (Byte)(buffer.Length - index);
 
@@ -910,7 +920,9 @@ namespace IoTCore {
                 result = CalulateCRC(ref responseBuffer, 1, ref buffer);
                 if (result != (byte)MFRC522Registermap.StatusCode.STATUS_OK)
                     return result;
-                
+                for (int ix = 2; ix < 4; ++ix)
+                    buffer[ix] = responseBuffer[ix-1];
+
                 if ((buffer[2] != responseBuffer[1]) || (buffer[3] != responseBuffer[2]))
                     return (byte)MFRC522Registermap.StatusCode.STATUS_CRC_WRONG;
                 

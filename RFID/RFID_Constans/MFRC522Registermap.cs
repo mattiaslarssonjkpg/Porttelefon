@@ -184,6 +184,8 @@ namespace IoTCore.RFID_Constans
             STATUS_MIFARE_NACK = 0xff   /* A MIFARE PICC responded with NAK. */
         };
 
+        
+
         public struct Uid {
             public void setSizeOfUidByte(int s){
                 uidByte = new Byte[s];
