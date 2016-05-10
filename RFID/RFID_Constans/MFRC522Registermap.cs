@@ -185,9 +185,12 @@ namespace IoTCore.RFID_Constans
         };
 
         public struct Uid {
-            public byte size; //Number of bytes in the UID. 4, 7 or 10.  
-            public byte[] uidByte;
-            public byte sak;   //The SAK(Select acknowledge) byte returned 
+            public void setSizeOfUidByte(int s){
+                uidByte = new Byte[s];
+            }
+            public Byte size; //Number of bytes in the UID. 4, 7 or 10.  
+            public Byte[] uidByte;
+            public Byte sak;   //The SAK(Select acknowledge) byte returned 
                         //from the PICC after successful selection. 
         }
     }

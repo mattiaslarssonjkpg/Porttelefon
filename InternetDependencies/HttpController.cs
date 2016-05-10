@@ -7,10 +7,15 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Windows.Data.Json;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace IoTCore.Httprequest
 {
     class HttpController {
+
+        public class RegisterBindingModel {
+            public string Id { get; set; }
+        }
 
         /**
          * FUNCTION NAME : ToJsonObject
@@ -19,8 +24,34 @@ namespace IoTCore.Httprequest
          * OUTPUT        : - 
          * NOTE          : -
          */
-        async Task<string> GetToken(string text, string serverAddress)
-        {
+        public String ConvertToJson(String value) {
+            var person = new RegisterBindingModel { Id = value };
+            var JsonObj = JsonConvert.SerializeObject(person);
+            return JsonObj;
+        }
+
+        /**
+         * FUNCTION NAME : ConvertFromJson
+         * DESCRIPTION   : Converts JsonString to regular String
+         * INPUT         : String
+         * OUTPUT        : String 
+         * NOTE          : -
+         */
+        public String ConvertFromJson(String value) {
+            var Lines = JsonConvert.DeserializeObject<RegisterBindingModel>(value);
+            //Console.WriteLine(t.ForeName + " " + t.SureName);
+            return Lines.Id;
+        }
+
+
+        /**
+         * FUNCTION NAME : ToJsonObject
+         * DESCRIPTION   : 
+         * INPUT         : -
+         * OUTPUT        : - 
+         * NOTE          : -
+         */
+        async Task<string> GetToken(string text, string serverAddress) {
             var httpClient = new HttpClient();
 
             var parameters = new Dictionary<string, string>();
@@ -37,10 +68,10 @@ namespace IoTCore.Httprequest
          * OUTPUT        : - 
          * NOTE          : -
          */
-        public async void PostToServer(JsonObject jsonObj, String apiKey, String serverAddress) {
+        public async void PostToServer(String jsonObj, String apiKey, String serverAddress) {
             var myClient = new HttpClient();
 
-            var content = new StringContent(jsonObj.ToString());
+            var content = new StringContent(jsonObj);
 
             myClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
