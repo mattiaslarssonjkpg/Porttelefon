@@ -330,9 +330,7 @@ namespace IoTCore {
          * * 
          * @return STATUS_OK on success, STATUS_??? otherwise.
          */
-        public byte MIFARE_Write(byte blockAddr, ///< MIFARE Classic: The block (0-0xff) number. MIFARE Ultralight: The page (2-15) to write to.
-                                 ref byte[] buffer, ///< The 16 bytes to write to the PICC
-                                 byte bufferSize) {///< Buffer size, must be at least 16 bytes. Exactly 16 bytes are written.
+        public byte MIFARE_Write(byte blockAddr, ref byte[] buffer, byte bufferSize) {
          
             byte result;
 
@@ -345,15 +343,14 @@ namespace IoTCore {
             Byte[] cmdBuffer = new Byte[2];
             cmdBuffer[0] = (Byte)MFRC522Registermap.PICC_Command.PICC_CMD_MF_WRITE;
             cmdBuffer[1] = blockAddr;
-            result = PCD_MIFARE_Transceive(ref cmdBuffer, 2, true); // Adds CRC_A and checks that the response is MF_ACK.
+            result = PCD_MIFARE_Transceive(ref cmdBuffer, 2, false); // Adds CRC_A and checks that the response is MF_ACK.
             if (result != (Byte)MFRC522Registermap.StatusCode.STATUS_OK)
                 return result;
             
             // Step 2: Transfer the data
-            result = PCD_MIFARE_Transceive(ref buffer, bufferSize, true); // Adds CRC_A and checks that the response is MF_ACK.
-            if (result != (Byte)MFRC522Registermap.StatusCode.STATUS_OK)
+            result = PCD_MIFARE_Transceive(ref buffer, bufferSize, false); // Adds CRC_A and checks that the response is MF_ACK.
+            if(result != (Byte)MFRC522Registermap.StatusCode.STATUS_OK)
                 return result;
-            
 
             return (Byte)MFRC522Registermap.StatusCode.STATUS_OK;
         } // End MIFARE_Write()
@@ -539,19 +536,8 @@ namespace IoTCore {
          * @return STATUS_OK on success, STATUS_??? otherwise.
          */
         // StatusCode PCD_CommunicateWithPICC(byte command, byte waitIRq, byte *sendData, byte sendLen, byte *backData = NULL, byte *backLen = NULL, byte *validBits = NULL, byte rxAlign = 0, bool checkCRC = false);
-        private Byte PCD_CommunicateWithPICC(
-                Byte command,               ///< The command to execute. One of the PCD_Command enums.
-                Byte waitIRq,               ///< The bits in the ComIrqReg register that signals successful completion of the command.
-                ref Byte[] sendData,        ///< Pointer to the data to transfer to the FIFO
-                Byte sendLen,
-                ref Byte[] backData,        ///< NULL or pointer to buffer if data should be read back after executing the command.
-                ref Byte backLen,           ///< In: Max number of bytes to write to *backData. Out: The number of bytes returned.
-                ref Byte validBits,         ///< In/Out: The number of valid bits in the last byte. 0 for 8 valid bits.
-                Byte rxAlign = 0,           ///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
-                bool checkCRC = false) {    ///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
-            
+        private Byte PCD_CommunicateWithPICC(Byte command, Byte waitIRq, ref Byte[] sendData, Byte sendLen, ref Byte[] backData, ref Byte backLen, ref Byte validBits, Byte rxAlign = 0, bool checkCRC = false) {
             Byte n, _validBits = 0;
-
             // Prepare values for BitFramingReg
             Byte bitFraming = (Byte)((rxAlign << 4) + validBits);      // RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
 
@@ -665,11 +651,7 @@ namespace IoTCore {
 
         #region GetPICCType
 
-        public Byte PICC_GetType(Byte sak		///< The SAK byte returned from PICC_Select().
-										){
-            // 3.2 Coding of Select Acknowledge (SAK)
-            // ignore 8-bit (iso14443 starts with LSBit = bit 1)
-            // fixes wrong type for manufacturer Infineon (http://nfc-tools.org/index.php?title=ISO14443A)
+        public Byte PICC_GetType(Byte sak) {
             sak &= 0x7F;
             switch (sak)
             {
@@ -689,29 +671,7 @@ namespace IoTCore {
         #endregion
 
         #region PICC_Select
-
-        // Description of buffer structure:
-        //		Byte 0: SEL 				Indicates the Cascade Level: PICC_CMD_SEL_CL1, PICC_CMD_SEL_CL2 or PICC_CMD_SEL_CL3
-        //		Byte 1: NVB					Number of Valid Bits (in complete command, not just the UID): High nibble: complete bytes, Low nibble: Extra bits. 
-        //		Byte 2: UID-data or CT		See explanation below. CT means Cascade Tag.
-        //		Byte 3: UID-data
-        //		Byte 4: UID-data
-        //		Byte 5: UID-data
-        //		Byte 6: BCC					Block Check Character - XOR of bytes 2-5
-        //		Byte 7: CRC_A
-        //		Byte 8: CRC_A
-        // The BCC and CRC_A are only transmitted if we know all the UID bits of the current Cascade Level.
-        //
-        // Description of bytes 2-5: (Section 6.5.4 of the ISO/IEC 14443-3 draft: UID contents and cascade levels)
-        //		UID size	Cascade level	Byte2	Byte3	Byte4	Byte5
-        //		========	=============	=====	=====	=====	=====
-        //		 4 bytes		1			uid0	uid1	uid2	uid3
-        //		 7 bytes		1			CT		uid0	uid1	uid2
-        //						2			uid3	uid4	uid5	uid6
-        //		10 bytes		1			CT		uid0	uid1	uid2
-        //						2			CT		uid3	uid4	uid5
-        //						3			uid6	uid7	uid8	uid9
-
+        
         public Byte PICC_Select(ref Uid uid, byte validBits = 0){
             
             bool uidComplete, selectDone, useCascadeTag;
@@ -724,7 +684,7 @@ namespace IoTCore {
             Byte bufferUsed;                    // The number of bytes used in the buffer, ie the number of bytes to transfer to the FIFO.
             Byte rxAlign;                       // Used in BitFramingReg. Defines the bit position for the first bit received.
             Byte txLastBits = 0;                // Used in BitFramingReg. The number of valid bits in the last transmitted byte. 
-            uid.uidByte = new Byte[buffer.Length];
+            uid.uidByte = new Byte[10];
             Byte[] responseBuffer = new byte[3];
             Byte responseLength = 0, result;
 
@@ -920,10 +880,10 @@ namespace IoTCore {
                 result = CalulateCRC(ref responseBuffer, 1, ref buffer);
                 if (result != (byte)MFRC522Registermap.StatusCode.STATUS_OK)
                     return result;
-                for (int ix = 2; ix < 4; ++ix)
-                    buffer[ix] = responseBuffer[ix-1];
+                //for (int ix = 2; ix < 4; ++ix)
+                //    buffer[ix] = responseBuffer[ix-1];
 
-                if ((buffer[2] != responseBuffer[1]) || (buffer[3] != responseBuffer[2]))
+                if ((buffer[buffer.Length-2] != responseBuffer[1]) || (buffer[buffer.Length-1] != responseBuffer[2]))
                     return (byte)MFRC522Registermap.StatusCode.STATUS_CRC_WRONG;
                 
                 if ((responseBuffer[0] & 0x04) != 0) // Cascade bit set - UID not complete yes
@@ -940,6 +900,68 @@ namespace IoTCore {
 
             return (byte)MFRC522Registermap.StatusCode.STATUS_OK;
         } // End PICC_Select()
+        #endregion
+
+
+        //new implemented...
+        #region Auth_Key_A
+
+        public Byte PCD_Authenticate(byte command, byte blockAddr, ref MIFARE_Key key, ref Uid uid){
+            //key.keyByte = new Byte[(Byte)MFRC522Registermap.MIFARE_Misc.MF_KEY_SIZE];
+            Byte waitIRq = 0x10; // IdleIRq
+            // Build command buffer
+            Byte[] sendData = new Byte[12];
+            Byte[] BackData = new Byte[0];
+            Byte ValidBytes = 0, backlen = (Byte)BackData.Length;
+            sendData[0] = command;
+            sendData[1] = blockAddr;
+
+            for (byte i = 0; i < (Byte)MFRC522Registermap.MIFARE_Misc.MF_KEY_SIZE; i++) // 6 key bytes
+                sendData[2 + i] = key.keyByte[i];
+            
+            for (byte i = 0; i < 4; i++) // The first 4 bytes of the UID
+                sendData[8 + i] = uid.uidByte[i];
+
+            // Start the authentication.
+            Byte b =  PCD_CommunicateWithPICC((Byte)MFRC522Registermap.PCD_Command.PCD_MFAuthent, waitIRq, ref sendData, (Byte)(sendData.Length), ref BackData, ref backlen, ref ValidBytes);
+            Byte x = 0;
+            return b;
+        } // End PCD_Authenticate()
+        #endregion
+
+        #region PiCC_Halt
+        public Byte PICC_HaltA(){
+         
+            Byte[] buffer = new Byte[4];
+            Byte result, backLen = 0, validBits = 0;
+            Byte[] backData = new Byte[0];
+            
+
+            // Build command buffer
+            buffer[0] = (Byte)MFRC522Registermap.PICC_Command.PICC_CMD_HLTA;
+            buffer[1] = 0;
+            // Calculate CRC_A
+            result = CalulateCRC(ref buffer, 2, ref buffer);
+            if (result != (Byte)MFRC522Registermap.StatusCode.STATUS_OK)
+                return result;
+            
+
+            // Send the command.
+            // The standard says:
+            //		If the PICC responds with any modulation during a period of 1 ms after the end of the frame containing the
+            //		HLTA command, this response shall be interpreted as 'not acknowledge'.
+            // We interpret that this way: Only STATUS_TIMEOUT is a success.
+            result = PCD_TransceiveData(ref buffer, (Byte)buffer.Length, ref backData, ref backLen, ref validBits);
+            if (result == (Byte)MFRC522Registermap.StatusCode.STATUS_TIMEOUT)
+                return (Byte)MFRC522Registermap.StatusCode.STATUS_OK;
+            
+            if (result == (Byte)MFRC522Registermap.StatusCode.STATUS_OK)
+                return (Byte)MFRC522Registermap.StatusCode.STATUS_ERROR;
+            
+            return result;
+        } // End PICC_HaltA()
+
+
         #endregion
     }
 }

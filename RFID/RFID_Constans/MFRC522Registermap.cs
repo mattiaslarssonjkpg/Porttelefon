@@ -195,5 +195,8 @@ namespace IoTCore.RFID_Constans
             public Byte sak;   //The SAK(Select acknowledge) byte returned 
                         //from the PICC after successful selection. 
         }
+        public struct MIFARE_Key{
+            public Byte[] keyByte;
+        }
     }
 }
