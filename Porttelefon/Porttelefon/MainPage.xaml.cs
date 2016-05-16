@@ -32,21 +32,13 @@ namespace Porttelefon
 #pragma warning disable 1998
     public sealed partial class MainPage : Page
     {
-        // Arrays for information that needs to be saved
-        private byte[] baroCalibrationData;
-        private GattDeviceService[] serviceList = new GattDeviceService[7];
-        private GattCharacteristic[] activeCharacteristics = new GattCharacteristic[7];
-
+        const int KEYS = 6;
         const string SENSOR_GUID_PREFIX = "F000AA";
-        const string SENSOR_GUID_SUFFFIX = "0-0451-4000-B000-000000000000";
-        const string SENSOR_NOTIFICATION_GUID_SUFFFIX = "1-0451-4000-B000-000000000000";
-        const string SENSOR_ENABLE_GUID_SUFFFIX = "2-0451-4000-B000-000000000000";
+
+        const string BUTTONS_GUID_STR = "0000FFE0-0000-1000-8000-00805F9B34FB";
         const string SENSOR_PERIOD_GUID_SUFFFIX = "3-0451-4000-B000-000000000000";
 
-        // IDs for Sensors
-        const int NUM_SENSORS = 1;
-
-        const int IR_SENSOR = 0;
+        private GattDeviceService[] serviceList = new GattDeviceService[7];
 
         private DeviceWatcher deviceWatcher = null;
 
@@ -75,22 +67,20 @@ namespace Porttelefon
 
         public MainPage()
         {
-            //this.InitializeComponent();
-
-            //UserOut.Text = "Searching for Bluetooth LE Devices...";
-            //resultsListView.IsEnabled = false;
-            //PairButton.IsEnabled = false;
-
+            this.InitializeComponent();
+            txtCurrentState.Text = "IDLE";
             ResultCollection = new ObservableCollection<DeviceInformationDisplay>();
-
-            DataContext = this;
-            //Start Watcher for pairable/paired devices
-            StartWatcher();
         }
 
         ~MainPage()
         {
-            StopWatcher();
+            //StopWatcher();
+        }
+
+
+        private void btnSearchBLE_Click(object sender, RoutedEventArgs e)
+        {
+            StartWatcher();
         }
 
         //Watcher for Bluetooth LE Devices based on the Protocol ID
@@ -164,7 +154,7 @@ namespace Porttelefon
                             //UpdatePairingButtons();
                             if (ResultCollection.Count == 0)
                             {
-                                //UserOut.Text = "Searching for Bluetooth LE Devices...";
+                                txtCurrentState.Text = "Searching for Bluetooth LE Devices...";
                             }
                             break;
                         }
@@ -181,11 +171,17 @@ namespace Porttelefon
 
                     if (ResultCollection.Count > 0)
                     {
-                        //UserOut.Text = "Select a device for pairing";
+                        txtCurrentState.Text = "Select a device for pairing";
+                        for (int i = 0; i < ResultCollection.Count; ++i)
+                        {
+                            var TextBlock = new TextBlock();
+                            TextBlock.Text = "Name: " + ResultCollection[i].Name + "Id: " + ResultCollection[i].Id;
+                            SearchScroll.Content = TextBlock;
+                        }
                     }
                     else
                     {
-                        //UserOut.Text = "No Bluetooth LE Devices found.";
+                        txtCurrentState.Text = "No Bluetooth LE Devices found.";
                     }
                     //UpdatePairingButtons();
                 });
@@ -196,298 +192,113 @@ namespace Porttelefon
             deviceWatcher.Start();
         }
 
-        private void StopWatcher()
-        {
-            if (null != deviceWatcher)
-            {
-                // First unhook all event handlers except the stopped handler. This ensures our
-                // event handlers don't get called after stop, as stop won't block for any "in flight" 
-                // event handler calls.  We leave the stopped handler as it's guaranteed to only be called
-                // once and we'll use it to know when the query is completely stopped. 
-                deviceWatcher.Added -= handlerAdded;
-                deviceWatcher.Updated -= handlerUpdated;
-                deviceWatcher.Removed -= handlerRemoved;
-                deviceWatcher.EnumerationCompleted -= handlerEnumCompleted;
-
-                if (DeviceWatcherStatus.Started == deviceWatcher.Status ||
-                    DeviceWatcherStatus.EnumerationCompleted == deviceWatcher.Status)
-                {
-                    deviceWatcher.Stop();
-                }
-            }
-        }
-
-        //Watcher for Bluetooth LE Services
-        private void StartBLEWatcher()
-        {
-            int discoveredServices = 0;
-            // Hook up handlers for the watcher events before starting the watcher
-            OnBLEAdded = async (watcher, deviceInfo) =>
-            {
-                Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () =>
-                {
-                    Debug.WriteLine("OnBLEAdded: " + deviceInfo.Id);
-                    GattDeviceService service = await GattDeviceService.FromIdAsync(deviceInfo.Id);
-                    if (service != null)
-                    {
-                        int sensorIdx = -1;
-                        string svcGuid = service.Uuid.ToString().ToUpper();
-                        Debug.WriteLine("Found Service: " + svcGuid);
-
-                        // Add this service to the list if it conforms to the TI-GUID pattern for most sensors
-                        if (svcGuid.StartsWith(SENSOR_GUID_PREFIX))
-                        {
-                            // The character at this position indicates the index into the serviceList 
-                            // container that we want to save this service to.  The rest of this program
-                            // assumes that specific sensor types are at specific indexes in this array
-                            sensorIdx = svcGuid[6] - '0';
-                        }
-
-                        // If the index is legal and a service hasn't already been cached, then
-                        // cache this service in our serviceList
-                        if (((sensorIdx >= 0) && (sensorIdx <= 5)) && (serviceList[sensorIdx] == null))
-                        {
-                            serviceList[sensorIdx] = service;
-                            await enableSensor(sensorIdx);
-                            System.Threading.Interlocked.Increment(ref discoveredServices);
-                        }
-
-                        // When all sensors have been discovered, notify the user
-                        if (discoveredServices == NUM_SENSORS)
-                        {
-                            //SensorList.IsEnabled = true;
-                            //DisableButton.IsEnabled = true;
-                            //EnableButton.IsEnabled = true;
-                            discoveredServices = 0;
-                            //UserOut.Text = "Sensors on!";
-                        }
-                    }
-                });
-            };
-
-
-            OnBLEUpdated = async (watcher, deviceInfoUpdate) =>
-            {
-                Dispatcher.RunAsync(CoreDispatcherPriority.Low, () =>
-                {
-                    Debug.WriteLine($"OnBLEUpdated: {deviceInfoUpdate.Id}");
-                });
-            };
-
-
-            OnBLERemoved = async (watcher, deviceInfoUpdate) =>
-            {
-                Dispatcher.RunAsync(CoreDispatcherPriority.Low, () =>
-                {
-                    Debug.WriteLine("OnBLERemoved");
-
-                });
-            };
-
-            string aqs = "";
-            for (int i = 0; i < NUM_SENSORS; i++)
-            {
-                Guid BLE_GUID;
-                if (i < 6)
-                    BLE_GUID = new Guid(SENSOR_GUID_PREFIX + i + SENSOR_GUID_SUFFFIX);
-
-                aqs += "(" + GattDeviceService.GetDeviceSelectorFromUuid(BLE_GUID) + ")";
-
-                if (i < NUM_SENSORS - 1)
-                {
-                    aqs += " OR ";
-                }
-            }
-
-            blewatcher = DeviceInformation.CreateWatcher(aqs);
-            blewatcher.Added += OnBLEAdded;
-            blewatcher.Updated += OnBLEUpdated;
-            blewatcher.Removed += OnBLERemoved;
-            blewatcher.Start();
-        }
-
-        private void StopBLEWatcher()
-        {
-            if (null != blewatcher)
-            {
-                blewatcher.Added -= OnBLEAdded;
-                blewatcher.Updated -= OnBLEUpdated;
-                blewatcher.Removed -= OnBLERemoved;
-
-                if (DeviceWatcherStatus.Started == blewatcher.Status ||
-                    DeviceWatcherStatus.EnumerationCompleted == blewatcher.Status)
-                {
-                    blewatcher.Stop();
-                }
-            }
-        }
-
-        // Set sensor update period 
-        private async void setSensorPeriod(int sensor, int period)
-        {
-            GattDeviceService gattService = serviceList[sensor];
-            if (sensor >= NUM_SENSORS && gattService != null)
-            {
-                var characteristicList = gattService.GetCharacteristics(new Guid(SENSOR_GUID_PREFIX + sensor + SENSOR_PERIOD_GUID_SUFFFIX));
-                if (characteristicList != null)
-                {
-                    GattCharacteristic characteristic = characteristicList[0];
-
-                    if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Write))
-                    {
-                        var writer = new Windows.Storage.Streams.DataWriter();
-                        // Accelerometer period = [Input * 10]ms
-                        writer.WriteByte((Byte)(period / 10));
-                        await characteristic.WriteValueAsync(writer.DetachBuffer());
-                    }
-                }
-            }
-        }
-
-        // Enable and subscribe to specified GATT characteristic
-        private async Task enableSensor(int sensor)
-        {
-            Debug.WriteLine("Begin enable sensor: " + sensor.ToString());
-            GattDeviceService gattService = serviceList[sensor];
-            if (gattService != null)
-            {
-                // Turn on notifications
-                IReadOnlyList<GattCharacteristic> characteristicList;
-                characteristicList = gattService.GetCharacteristics(new Guid(SENSOR_GUID_PREFIX + sensor + SENSOR_NOTIFICATION_GUID_SUFFFIX));
-
-                if (characteristicList != null)
-                {
-                    GattCharacteristic characteristic = characteristicList[0];
-                    if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
-                    {
-                        switch (sensor)
-                        {
-                            case (IR_SENSOR):
-                                characteristic.ValueChanged += tempChanged;
-                                //RelayTitle.Foreground = new SolidColorBrush(Colors.Green);
-                                break;
-                            default:
-                                break;
-                        }
-
-                        // Save a reference to each active characteristic, so that handlers do not get prematurely killed
-                        activeCharacteristics[sensor] = characteristic;
-
-                        // Set the notify enable flag
-                        await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.Notify);
-                    }
-                }
-
-                // Turn on sensor
-                if (sensor >= 0 && sensor <= 5)
-                {
-                    characteristicList = gattService.GetCharacteristics(new Guid(SENSOR_GUID_PREFIX + sensor + SENSOR_ENABLE_GUID_SUFFFIX));
-                    if (characteristicList != null)
-                    {
-                        GattCharacteristic characteristic = characteristicList[0];
-                        if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Write))
-                        {
-                            var writer = new Windows.Storage.Streams.DataWriter();
-
-                            writer.WriteByte((Byte)0x01);
-
-                            await characteristic.WriteValueAsync(writer.DetachBuffer());
-                        }
-                    }
-                }
-            }
-            Debug.WriteLine("End enable sensor: " + sensor.ToString());
-
-        }
-
-        // Disable notifications to specified GATT characteristic
-        private async Task disableSensor(int sensor)
-        {
-            Debug.WriteLine("Begin disable of sensor: " + sensor.ToString());
-            GattDeviceService gattService = serviceList[sensor];
-            if (gattService != null)
-            {
-                // Disable notifications
-                IReadOnlyList<GattCharacteristic> characteristicList;
-                characteristicList = gattService.GetCharacteristics(new Guid(SENSOR_GUID_PREFIX + sensor + SENSOR_NOTIFICATION_GUID_SUFFFIX));
-
-                if (characteristicList != null)
-                {
-                    GattCharacteristic characteristic = characteristicList[0];
-                    if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
-                    {
-                        GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.None);
-                    }
-                }
-            }
-
-            switch (sensor)
-            {
-                case (IR_SENSOR):
-                    RelayTitle.Foreground = new SolidColorBrush(Colors.White);
-                    break;
-                default:
-                    break;
-            }
-            activeCharacteristics[sensor] = null;
-            Debug.WriteLine("End disable for sensor: " + sensor.ToString());
-
-        }
-
         // ---------------------------------------------------
         //             Pairing Process Handlers and Functions -- Begin
         // ---------------------------------------------------
 
-        private async void PairButton_Click(object sender, RoutedEventArgs e)
+        private void ShowPairingPanel(string text, DevicePairingKinds pairingKind)
         {
+            pairingPanel.Visibility = Visibility.Collapsed;
+            pinEntryTextBox.Visibility = Visibility.Collapsed;
+            okButton.Visibility = Visibility.Collapsed;
+            yesButton.Visibility = Visibility.Collapsed;
+            noButton.Visibility = Visibility.Collapsed;
+            pairingTextBlock.Text = text;
 
-            DeviceInformationDisplay deviceInfoDisp = resultsListView.SelectedItem as DeviceInformationDisplay;
-
-            if (deviceInfoDisp != null)
+            switch (pairingKind)
             {
-                //PairButton.IsEnabled = false;
-                bool paired = true;
-                if (deviceInfoDisp.IsPaired != true)
-                {
-                    paired = false;
-                    DevicePairingKinds ceremoniesSelected = DevicePairingKinds.ConfirmOnly | DevicePairingKinds.DisplayPin | DevicePairingKinds.ProvidePin | DevicePairingKinds.ConfirmPinMatch;
-                    DevicePairingProtectionLevel protectionLevel = DevicePairingProtectionLevel.Default;
+                case DevicePairingKinds.ConfirmOnly:
+                case DevicePairingKinds.DisplayPin:
+                    // Don't need any buttons
+                    break;
+                case DevicePairingKinds.ProvidePin:
+                    pinEntryTextBox.Text = "";
+                    pinEntryTextBox.Visibility = Visibility.Visible;
+                    okButton.Visibility = Visibility.Visible;
+                    break;
+                case DevicePairingKinds.ConfirmPinMatch:
+                    yesButton.Visibility = Visibility.Visible;
+                    noButton.Visibility = Visibility.Visible;
+                    break;
+            }
 
-                    // Specify custom pairing with all ceremony types and protection level EncryptionAndAuthentication
-                    DeviceInformationCustomPairing customPairing = deviceInfoDisp.DeviceInformation.Pairing.Custom;
+            pairingPanel.Visibility = Visibility.Visible;
+        }
 
-                    customPairing.PairingRequested += PairingRequestedHandler;
-                    DevicePairingResult result = await customPairing.PairAsync(ceremoniesSelected, protectionLevel);
+        private void HidePairingPanel()
+        {
+            pairingPanel.Visibility = Visibility.Collapsed;
+            pairingTextBlock.Text = "";
+        }
 
-                    customPairing.PairingRequested -= PairingRequestedHandler;
-
-                    if (result.Status == DevicePairingResultStatus.Paired)
-                    {
-                        paired = true;
-                    }
-                    else
-                    {
-                        //UserOut.Text = "Pairing Failed " + result.Status.ToString();
-                    }
-                }
-
-                if (paired)
-                {
-                    // device is paired, set up the sensor Tag            
-                    //UserOut.Text = "Setting up SensorTag";
-
-                    DeviceInfoConnected = deviceInfoDisp;
-
-                    //Start watcher for Bluetooth LE Services
-                    StartBLEWatcher();
-                }
-                //UpdatePairingButtons();
+        // If pin is not provided, then any pending pairing request is abandoned.
+        private void CompleteProvidePinTask(string pin = null)
+        {
+            if (providePinTaskSrc != null)
+            {
+                providePinTaskSrc.SetResult(pin);
+                providePinTaskSrc = null;
             }
         }
-        private void ResultsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+
+
+        // If pin is not provided, then any pending pairing request is abandoned.
+        private void CompleteConfirmPinTask(bool accept)
         {
-            //UpdatePairingButtons();
+            if (confirmPinTaskSrc != null)
+            {
+                confirmPinTaskSrc.SetResult(accept);
+                confirmPinTaskSrc = null;
+            }
         }
+
+        private void okButton_Click(object sender, RoutedEventArgs e)
+        {
+            // OK button is only used for the ProvidePin scenario
+            CompleteProvidePinTask(pinEntryTextBox.Text);
+            HidePairingPanel();
+        }
+
+        private void yesButton_Click(object sender, RoutedEventArgs e)
+        {
+            CompleteConfirmPinTask(true);
+            HidePairingPanel();
+        }
+
+        private void noButton_Click(object sender, RoutedEventArgs e)
+        {
+            CompleteConfirmPinTask(false);
+            HidePairingPanel();
+        }
+
+        private async Task<string> GetPinFromUserAsync()
+        {
+            HidePairingPanel();
+            CompleteProvidePinTask(); // Abandon any previous pin request.
+
+            ShowPairingPanel(
+                "Please enter the PIN shown on the device you're pairing with",
+                DevicePairingKinds.ProvidePin);
+
+            providePinTaskSrc = new TaskCompletionSource<string>();
+
+            return await providePinTaskSrc.Task;
+        }
+
+        private async Task<bool> GetUserConfirmationAsync(string pin)
+        {
+            HidePairingPanel();
+            CompleteConfirmPinTask(false); // Abandon any previous request.
+
+            ShowPairingPanel(
+                "Does the following PIN match the one shown on the device you are pairing?: " + pin,
+                DevicePairingKinds.ConfirmPinMatch);
+
+            confirmPinTaskSrc = new TaskCompletionSource<bool>();
+
+            return await confirmPinTaskSrc.Task;
+        }
+
         private async void PairingRequestedHandler(
              DeviceInformationCustomPairing sender,
              DevicePairingRequestedEventArgs args)
@@ -509,9 +320,9 @@ namespace Porttelefon
                     // No need for a deferral since we don't need any decision from the user
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
-                        /*ShowPairingPanel(
+                        ShowPairingPanel(
                             "Please enter this PIN on the device you are pairing with: " + args.Pin,
-                            args.PairingKind);*/
+                            args.PairingKind);
 
                     });
                     break;
@@ -553,102 +364,124 @@ namespace Porttelefon
             }
         }
 
-        /*
-        private void ShowPairingPanel(string text, DevicePairingKinds pairingKind)
+        //Watcher for Bluetooth LE Services
+        private void StartBLEWatcher()
         {
-            pairingPanel.Visibility = Visibility.Collapsed;
-            pinEntryTextBox.Visibility = Visibility.Collapsed;
-            okButton.Visibility = Visibility.Collapsed;
-            yesButton.Visibility = Visibility.Collapsed;
-            noButton.Visibility = Visibility.Collapsed;
-            pairingTextBlock.Text = text;
-
-            switch (pairingKind)
+            int discoveredServices = 0;
+            // Hook up handlers for the watcher events before starting the watcher
+            OnBLEAdded = async (watcher, deviceInfo) =>
             {
-                case DevicePairingKinds.ConfirmOnly:
-                case DevicePairingKinds.DisplayPin:
-                    // Don't need any buttons
-                    break;
-                case DevicePairingKinds.ProvidePin:
-                    pinEntryTextBox.Text = "";
-                    pinEntryTextBox.Visibility = Visibility.Visible;
-                    okButton.Visibility = Visibility.Visible;
-                    break;
-                case DevicePairingKinds.ConfirmPinMatch:
-                    yesButton.Visibility = Visibility.Visible;
-                    noButton.Visibility = Visibility.Visible;
-                    break;
+                Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () =>
+                {
+                    Debug.WriteLine("OnBLEAdded: " + deviceInfo.Id);
+                    GattDeviceService service = await GattDeviceService.FromIdAsync(deviceInfo.Id);
+                    if (service != null)
+                    {
+                        int sensorIdx = -1;
+                        string svcGuid = service.Uuid.ToString().ToUpper();
+                        Debug.WriteLine("Found Service: " + svcGuid);
+
+                        // Add this service to the list if it conforms to the TI-GUID pattern for most sensors
+                        if (svcGuid.StartsWith(SENSOR_GUID_PREFIX))
+                        {
+                            // The character at this position indicates the index into the serviceList 
+                            // container that we want to save this service to.  The rest of this program
+                            // assumes that specific sensor types are at specific indexes in this array
+                            sensorIdx = svcGuid[6] - '0';
+                        }
+                        // otherwise, if this is the GUID for the KEYS, then handle it special
+                        else if (svcGuid == BUTTONS_GUID_STR)
+                        {
+                            sensorIdx = KEYS;
+                        }
+                        // If the index is legal and a service hasn't already been cached, then
+                        // cache this service in our serviceList
+                        if (((sensorIdx >= 0) && (sensorIdx <= KEYS)) && (serviceList[sensorIdx] == null))
+                        {
+                            serviceList[sensorIdx] = service;
+                            //await enableSensor(sensorIdx);
+                            System.Threading.Interlocked.Increment(ref discoveredServices);
+                        }
+
+                        // When all sensors have been discovered, notify the user
+
+                        //SensorList.IsEnabled = true;
+                        DisableButton.IsEnabled = true;
+                        EnableButton.IsEnabled = true;
+                        discoveredServices = 0;
+                        txtCurrentState.Text = "Sensors on!";
+
+                    }
+                });
+            };
+        }
+
+        private async void WriteData()
+        {
+            GattDeviceService gattService = serviceList[0];
+            var characteristicList = gattService.GetCharacteristics(new Guid(SENSOR_GUID_PREFIX + 0 + SENSOR_PERIOD_GUID_SUFFFIX));
+            GattCharacteristic characteristic = characteristicList[0];
+            var writer = new Windows.Storage.Streams.DataWriter();
+            writer.WriteByte((Byte)0x02);
+            await characteristic.WriteValueAsync(writer.DetachBuffer());
+        }
+
+        private void btnSendData_Click(object sender, RoutedEventArgs e)
+        {
+            WriteData();
+        }
+
+        private async void pairButton_Click_1(object sender, RoutedEventArgs e)
+        {
+            //DeviceInformationDisplay deviceInfoDisp = listSearchResult.SelectedItem as DeviceInformationDisplay;
+            DeviceInformationDisplay deviceInfoDisp = ResultCollection[0];
+            txtCurrentState.Text = "Waiting for pairing";
+            if (deviceInfoDisp != null)
+            {
+                bool paired = true;
+                if (deviceInfoDisp.IsPaired != true)
+                {
+                    paired = false;
+                    DevicePairingKinds ceremoniesSelected = DevicePairingKinds.ConfirmOnly | DevicePairingKinds.DisplayPin | DevicePairingKinds.ProvidePin | DevicePairingKinds.ConfirmPinMatch;
+                    DevicePairingProtectionLevel protectionLevel = DevicePairingProtectionLevel.Default;
+
+                    // Specify custom pairing with all ceremony types and protection level EncryptionAndAuthentication
+                    DeviceInformationCustomPairing customPairing = deviceInfoDisp.DeviceInformation.Pairing.Custom;
+
+                    customPairing.PairingRequested += PairingRequestedHandler;
+                    DevicePairingResult result = await customPairing.PairAsync(ceremoniesSelected, protectionLevel);
+
+                    customPairing.PairingRequested -= PairingRequestedHandler;
+
+                    if (result.Status == DevicePairingResultStatus.Paired)
+                    {
+                        paired = true;
+                    }
+                    else
+                    {
+                        txtCurrentState.Text = "Pairing Failed " + result.Status.ToString();
+                    }
+                }
+
+                if (paired)
+                {
+                    // device is paired, set up the sensor Tag            
+                    txtCurrentState.Text = "Pairing succesful";
+
+                    DeviceInfoConnected = deviceInfoDisp;
+
+                    //Start watcher for Bluetooth LE Services
+                    StartBLEWatcher();
+                }
+
             }
-
-            pairingPanel.Visibility = Visibility.Visible;
         }
 
-        private void HidePairingPanel()
-        {
-            pairingPanel.Visibility = Visibility.Collapsed;
-            pairingTextBlock.Text = "";
-        }
-        */
-
-        private async Task<string> GetPinFromUserAsync()
-        {
-            //HidePairingPanel();
-            CompleteProvidePinTask(); // Abandon any previous pin request.
-
-            /*ShowPairingPanel(
-            "Please enter the PIN shown on the device you're pairing with",
-                DevicePairingKinds.ProvidePin);*/
-
-            providePinTaskSrc = new TaskCompletionSource<string>();
-
-            return await providePinTaskSrc.Task;
-        }
-
-        // If pin is not provided, then any pending pairing request is abandoned.
-        private void CompleteProvidePinTask(string pin = null)
-        {
-            if (providePinTaskSrc != null)
-            {
-                providePinTaskSrc.SetResult(pin);
-                providePinTaskSrc = null;
-            }
-        }
-
-        private async Task<bool> GetUserConfirmationAsync(string pin)
-        {
-            //HidePairingPanel();
-            CompleteConfirmPinTask(false); // Abandon any previous request.
-
-            /*ShowPairingPanel(
-            "Does the following PIN match the one shown on the device you are pairing?: " + pin,
-                DevicePairingKinds.ConfirmPinMatch);*/
-
-            confirmPinTaskSrc = new TaskCompletionSource<bool>();
-
-            return await confirmPinTaskSrc.Task;
-        }
-
-        // If pin is not provided, then any pending pairing request is abandoned.
-        private void CompleteConfirmPinTask(bool accept)
-        {
-            if (confirmPinTaskSrc != null)
-            {
-                confirmPinTaskSrc.SetResult(accept);
-                confirmPinTaskSrc = null;
-            }
-        }
+        // ---------------------------------------------------
+        //             Pairing Process Handlers and Functions -- End
+        // ---------------------------------------------------
 
 
-        async void tempChanged(GattCharacteristic sender, GattValueChangedEventArgs eventArgs)
-        {
-            byte[] bArray = new byte[eventArgs.CharacteristicValue.Length];
-            DataReader.FromBuffer(eventArgs.CharacteristicValue).ReadBytes(bArray);
 
-            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-            {
-                //AmbTempOut.Text = string.Format("Chip:\t{0:0.0####}", AmbTemp);
-                //ObjTempOut.Text = string.Format("IR:  \t{0:0.0####}", tObj);
-            });
-        }
     }
 }
