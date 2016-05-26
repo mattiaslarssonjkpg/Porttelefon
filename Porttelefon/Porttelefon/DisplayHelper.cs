@@ -5,7 +5,7 @@ using Windows.Foundation;
 using Windows.Devices.Enumeration;
 using Windows.UI.Xaml.Media.Imaging;
 
-namespace Porttelefon.Bluetooth
+namespace Porttelefon
 {
     public class DeviceInformationDisplay : INotifyPropertyChanged
     {
