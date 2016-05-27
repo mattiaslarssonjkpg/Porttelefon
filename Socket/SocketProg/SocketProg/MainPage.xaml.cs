@@ -12,19 +12,30 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.ApplicationModel.Background;
+using Windows.System.Threading;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-namespace Socket
+namespace SocketProg
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        //StartupTask _server = new StartupTask();
+        SocketServer _server = new SocketServer(9000);
         public MainPage()
         {
             this.InitializeComponent();
+            _server.Star();
+        }
+
+        private void socket_OnDataRecived(string data)
+        {
+            txtRecievedData.Text = data;
         }
     }
+
 }
