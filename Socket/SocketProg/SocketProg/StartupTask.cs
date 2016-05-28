@@ -5,16 +5,23 @@ using System.Text;
 using System.Net.Http;
 using Windows.ApplicationModel.Background;
 using Windows.System.Threading;
+using System.Threading.Tasks;
+
 
 // The Background Application template is documented at http://go.microsoft.com/fwlink/?LinkID=533884&clcid=0x409
 
 namespace SocketProg
 {
     //public sealed class StartupTask : IBackgroundTask
-    public sealed class StartupTask
+    public class StartupTask
     {
         private SocketServer socket;
-        public void Run()
+
+        public StartupTask() { }
+
+        ~StartupTask() { }
+
+        public async Task Run()
         {
             // 
             // TODO: Insert code to perform background work
@@ -25,7 +32,7 @@ namespace SocketProg
             //
             //taskInstance.GetDeferral();
             socket = new SocketServer(9000);
-            ThreadPool.RunAsync(x => {
+            await ThreadPool.RunAsync(x => {
                 socket.OnError += socket_OnError;
                 socket.OnDataRecived += Socket_OnDataRecived;
                 socket.Star();

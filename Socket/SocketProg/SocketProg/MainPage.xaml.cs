@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.ApplicationModel.Background;
 using Windows.System.Threading;
+using System.Threading.Tasks;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -25,11 +26,12 @@ namespace SocketProg
     public sealed partial class MainPage : Page
     {
         //StartupTask _server = new StartupTask();
-        SocketServer _server = new SocketServer(9000);
+        //SocketServer _server = new SocketServer(9000);
+        StartupTask _server = new StartupTask(); 
         public MainPage()
         {
             this.InitializeComponent();
-            _server.Star();
+            Task.Run(_server.Run);
         }
 
         private void socket_OnDataRecived(string data)
