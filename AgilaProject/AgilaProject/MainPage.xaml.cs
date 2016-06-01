@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 // Start ************** My includes ************
 using AgilaProject.Models;
-using static AgilaProject.InternetDependencies;
+//using  AgilaProject.InternetDependencies;
 using AgilaProject.InternetDependencies;
 using AgilaProject.RFID;
 using AgilaProject.Time;
@@ -47,10 +47,10 @@ namespace AgilaProject
             test();
             runTask();
         }
-        private async void test()
+        private  void test()
         {
             httpPostMail = "http://localhost:5998/api/Users/Mail/" + "4";
-            RegisterBindingModel registermodel = new RegisterBindingModel();
+            /*RegisterBindingModel registermodel = new RegisterBindingModel();
             registermodel.StudentName = "Test";
             registermodel.Subject = "Corridor Notification";
             registermodel.Content = "is outside and wish you to open the door";
@@ -58,7 +58,7 @@ namespace AgilaProject
             String JsonObj = httpController.ConvertToJson(registermodel);
             String x = await httpController.PostToServer(JsonObj, httpPostMail);
             Debug.WriteLine(x);
-            int y = 0;
+            int y = 0;*/
         }
         private void runTask()
         {

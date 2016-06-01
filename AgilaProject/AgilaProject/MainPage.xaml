@@ -21,7 +21,7 @@
     </Page.Resources>
 
     <!-- ItemsSource="{x:Bind ListViewTeachers} -->
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="1024" Height="768">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
         <ListView x:Name="ListViewPopulate" 
                       IsItemClickEnabled="True" ItemClick="GridView_ItemClick" HorizontalContentAlignment="Left"
                       ItemTemplate="{StaticResource TeachersList}">

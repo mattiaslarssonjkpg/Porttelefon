@@ -101,8 +101,6 @@
     <Compile Include="Classes\Models\TeacherModel.cs" />
     <Compile Include="Classes\RFID\MFRC522.cs" />
     <Compile Include="Classes\RFID\MFRC522lib\MFRC522Registermap.cs" />
-    <Compile Include="Classes\RFID\MFRC552.cs" />
-    <Compile Include="Classes\RFID\RFID_Constans\MFRC522Registermap.cs" />
     <Compile Include="Classes\Socket\SocketServer.cs" />
     <Compile Include="Classes\Socket\StartupTask.cs" />
     <Compile Include="Classes\Time\Time.cs" />
@@ -122,16 +120,16 @@
     <None Include="AgilaProject_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Classes\Assets\BackArrow.png" />
-    <Content Include="Classes\Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Classes\Assets\sms.png" />
-    <Content Include="Classes\Assets\SplashScreen.scale-200.png" />
-    <Content Include="Classes\Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Classes\Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Classes\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Classes\Assets\StoreLogo.png" />
-    <Content Include="Classes\Assets\TeachersPic.png" />
-    <Content Include="Classes\Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\BackArrow.png" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\sms.png" />
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\TeachersPic.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="Properties\Default.rd.xml" />
   </ItemGroup>
   <ItemGroup>

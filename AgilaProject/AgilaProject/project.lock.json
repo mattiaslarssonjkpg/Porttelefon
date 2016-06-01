@@ -229,7 +229,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "Newtonsoft.Json/8.0.4-beta1": {
+      "Newtonsoft.Json/9.0.1-beta1": {
         "compile": {
           "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll": {}
         },
@@ -1851,7 +1851,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "Newtonsoft.Json/8.0.4-beta1": {
+      "Newtonsoft.Json/9.0.1-beta1": {
         "compile": {
           "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll": {}
         },
@@ -3506,7 +3506,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "Newtonsoft.Json/8.0.4-beta1": {
+      "Newtonsoft.Json/9.0.1-beta1": {
         "compile": {
           "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll": {}
         },
@@ -5166,7 +5166,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "Newtonsoft.Json/8.0.4-beta1": {
+      "Newtonsoft.Json/9.0.1-beta1": {
         "compile": {
           "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll": {}
         },
@@ -6821,7 +6821,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "Newtonsoft.Json/8.0.4-beta1": {
+      "Newtonsoft.Json/9.0.1-beta1": {
         "compile": {
           "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll": {}
         },
@@ -8481,7 +8481,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "Newtonsoft.Json/8.0.4-beta1": {
+      "Newtonsoft.Json/9.0.1-beta1": {
         "compile": {
           "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll": {}
         },
@@ -10136,7 +10136,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "Newtonsoft.Json/8.0.4-beta1": {
+      "Newtonsoft.Json/9.0.1-beta1": {
         "compile": {
           "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll": {}
         },
@@ -11578,27 +11578,31 @@
     },
     "Microsoft.IoT.DeviceHelpers/1.0.4": {
       "sha512": "SqYkxwOFvupxGJx7srYuVaqQtuxpKBKjcDQFP9435B3O0jBRTiVo66qJCxrN5v5XEJM3snsKRlAkqRFD28fAkw==",
-      "type": "package",
+      "type": "Package",
       "files": [
+        "[Content_Types].xml",
+        "_rels/.rels",
         "lib/uap10.0/Microsoft.IoT.DeviceHelpers.dll",
         "lib/uap10.0/Microsoft.IoT.DeviceHelpers.pdb",
         "lib/uap10.0/Microsoft.IoT.DeviceHelpers.pri",
         "lib/uap10.0/Microsoft.IoT.DeviceHelpers.XML",
         "lib/uap10.0/Microsoft.IoT.DeviceHelpers/Properties/Microsoft.IoT.DeviceHelpers.rd.xml",
-        "Microsoft.IoT.DeviceHelpers.1.0.4.nupkg.sha512",
-        "Microsoft.IoT.DeviceHelpers.nuspec"
+        "Microsoft.IoT.DeviceHelpers.nuspec",
+        "package/services/metadata/core-properties/7bb989b7eea642e3b08aab8124b6415f.psmdcp"
       ]
     },
     "Microsoft.IoT.Devices/1.0.6": {
       "sha512": "BpID52RDpoJYj9YOIbFr6yPyKz398RGMsiYs4hwaSKK+KafBj/13NyXBPOupz2OFjZAqxznXXZahunNMUWuVcw==",
-      "type": "package",
+      "type": "Package",
       "files": [
+        "[Content_Types].xml",
+        "_rels/.rels",
         "lib/uap10.0/Microsoft.IoT.Devices.pdb",
         "lib/uap10.0/Microsoft.IoT.Devices.pri",
         "lib/uap10.0/Microsoft.IoT.Devices.winmd",
         "lib/uap10.0/Microsoft.IoT.Devices.XML",
-        "Microsoft.IoT.Devices.1.0.6.nupkg.sha512",
-        "Microsoft.IoT.Devices.nuspec"
+        "Microsoft.IoT.Devices.nuspec",
+        "package/services/metadata/core-properties/f6e2851af6084ee785328c90770597c9.psmdcp"
       ]
     },
     "Microsoft.NETCore/5.0.0": {
@@ -12183,10 +12187,12 @@
         "ref/xamarinmac20/_._"
       ]
     },
-    "Newtonsoft.Json/8.0.4-beta1": {
-      "sha512": "GqF30CGzAlNEK7bvCUcf7pjZpQDXqS7tNLflNPus5yJKXW6nrzjTiqgcHs/lIPaeVxvpFIqQgqQNL+4TmgxCjQ==",
-      "type": "package",
+    "Newtonsoft.Json/9.0.1-beta1": {
+      "sha512": "eGdISZNV16lWnDPHjfgBVcoyihASk/zsoXLN3r2uZYnXisiTUWKF8Xmgza3EtEFOMbYTmjUqBEjjT7Lx7ilK/w==",
+      "type": "Package",
       "files": [
+        "[Content_Types].xml",
+        "_rels/.rels",
         "lib/net20/Newtonsoft.Json.dll",
         "lib/net20/Newtonsoft.Json.xml",
         "lib/net35/Newtonsoft.Json.dll",
@@ -12201,8 +12207,8 @@
         "lib/portable-net40+sl5+wp80+win8+wpa81/Newtonsoft.Json.xml",
         "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.dll",
         "lib/portable-net45+wp80+win8+wpa81/Newtonsoft.Json.xml",
-        "Newtonsoft.Json.8.0.4-beta1.nupkg.sha512",
         "Newtonsoft.Json.nuspec",
+        "package/services/metadata/core-properties/65212b824cc247b9b837381216997e63.psmdcp",
         "tools/install.ps1"
       ]
     },
@@ -14743,7 +14749,7 @@
       "Microsoft.IoT.DeviceCore >= 1.0.3",
       "Microsoft.IoT.Devices >= 1.0.6",
       "Microsoft.NETCore.UniversalWindowsPlatform >= 5.0.0",
-      "Newtonsoft.Json >= 8.0.4-beta1",
+      "Newtonsoft.Json >= 9.0.1-beta1",
       "NotificationsExtensions.UniversalApps >= 1.0.3"
     ],
     "UAP,Version=v10.0": []

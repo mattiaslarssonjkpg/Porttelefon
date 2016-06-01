@@ -3,7 +3,7 @@
     "Microsoft.IoT.DeviceCore": "1.0.3",
     "Microsoft.IoT.Devices": "1.0.6",
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0",
-    "Newtonsoft.Json": "8.0.4-beta1",
+    "Newtonsoft.Json": "9.0.1-beta1",
     "NotificationsExtensions.UniversalApps": "1.0.3"
   },
   "frameworks": {

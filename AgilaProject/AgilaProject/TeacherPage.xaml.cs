@@ -26,7 +26,7 @@ namespace AgilaProject
             MACAddress = null, 
             Teacherstatus = "avaiable",
             JsonObj = null;
-        internal Boolean isInit = false;
+        internal Boolean isInit = true;
         public TeacherPage()
         {
             this.InitializeComponent();

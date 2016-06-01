@@ -33,6 +33,8 @@
   </Applications>
   <Capabilities>
     <Capability Name="internetClient" />
+    <Capability Name="internetClientServer" />
+    <DeviceCapability Name="bluetooth" />
   </Capabilities>
   <Extensions>
     <Extension Category="windows.activatableClass.inProcessServer">
@@ -56,22 +58,22 @@
         <ActivatableClass ActivatableClassId="Microsoft.IoT.DeviceCore.Adc.AdcProviderManager" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Lights.RgbLed" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Sensors.AnalogSensor" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Display.ST7735" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Display.ADA938" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Display.SSD1306" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Display.ADA938" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Display.ST7735" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Pwm.SoftPwm" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Pwm.PCA9685" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Adc.MCP3008" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Adc.MCP3208" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Adc.ADC0832" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Input.Switch" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Input.RotaryEncoder" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Input.SS944" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Input.PushButton" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Input.RotaryEncoder" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.IoT.Devices.Input.Switch" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="NotificationsExtensions.TileContent.TileContentFactory" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="NotificationsExtensions.ToastContent.ToastContentFactory" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="NotificationsExtensions.BadgeContent.BadgeGlyphNotificationContent" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="NotificationsExtensions.BadgeContent.BadgeNumericNotificationContent" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="NotificationsExtensions.BadgeContent.BadgeGlyphNotificationContent" ThreadingModel="both" />
       </InProcessServer>
     </Extension>
   </Extensions>
@@ -80,12 +82,12 @@
     <build:Item Name="VisualStudio" Version="14.0" />
     <build:Item Name="VisualStudioEdition" Value="Microsoft Visual Studio Enterprise 2015" />
     <build:Item Name="OperatingSystem" Version="10.0.10586.0 (th2_release.151029-1700)" />
-    <build:Item Name="Microsoft.Build.AppxPackage.dll" Version="14.0.25123.0" />
+    <build:Item Name="Microsoft.Build.AppxPackage.dll" Version="14.0.24720.0" />
     <build:Item Name="ProjectGUID" Value="{D2392D02-57C7-4A1F-BF50-7E2A6268CB17}" />
     <build:Item Name="OptimizingToolset" Value="None" />
     <build:Item Name="TargetRuntime" Value="Managed" />
-    <build:Item Name="Microsoft.Windows.UI.Xaml.Build.Tasks.dll" Version="14.0.25219.0" />
+    <build:Item Name="Microsoft.Windows.UI.Xaml.Build.Tasks.dll" Version="14.0.24720.0" />
     <build:Item Name="WindowsIoT" Version="10.0.10240.0" />
-    <build:Item Name="MakePri.exe" Version="10.0.10586.212 (th2_release_sec.160328-1908)" />
+    <build:Item Name="MakePri.exe" Version="10.0.10586.15 (th2_release.151119-1817)" />
   </build:Metadata>
 </Package>
