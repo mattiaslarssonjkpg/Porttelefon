@@ -12,10 +12,8 @@ using System.Diagnostics;
 using AgilaProject.Models;
 using static AgilaProject.InternetDependencies;
 using AgilaProject.InternetDependencies;
-using AgilaProject.Models;
 using AgilaProject.RFID;
 using AgilaProject.Time;
-using AgilaProject.Bluetooth;
 using AgilaProject.Socket;
 
 // Stop  ************** My includes ************
@@ -34,10 +32,11 @@ namespace AgilaProject
 
         //internal static HttpController httpController;
         internal HttpController httpController;
+        StartupTask _server = new StartupTask();
         public MainPage()
         {
             this.InitializeComponent();
-
+            Task.Run(_server.Run);
             httpController = new HttpController();
 
             //IToastText01 trying_toast = ToastContentFactory.CreateToastText01();
