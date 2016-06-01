@@ -208,3 +208,20 @@ C:\Users\andre\OneDrive\Documents\Visual Studio 2015\Projects\AgilaProject\Agila
 C:\Users\andre\OneDrive\Documents\Visual Studio 2015\Projects\AgilaProject\AgilaProject\bin\x86\Debug\NotificationsExtensions.winmd
 C:\Users\andre\OneDrive\Documents\Visual Studio 2015\Projects\AgilaProject\AgilaProject\bin\x86\Debug\NotificationsExtensions.pdb
 C:\Users\andre\OneDrive\Documents\Visual Studio 2015\Projects\AgilaProject\AgilaProject\obj\x86\Debug\NotificationsExtensions.pri.xml
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\AgilaProject.csprojResolveAssemblyReference.cache
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\App.g.i.cs
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\App.g.cs
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\MainPage.g.i.cs
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\MainPage.g.cs
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\TeacherPage.g.i.cs
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\TeacherPage.g.cs
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\XamlTypeInfo.g.cs
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\App.xaml
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\MainPage.xaml
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\TeacherPage.xaml
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\App.xbf
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\MainPage.xbf
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\TeacherPage.xbf
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\XamlSaveStateFile.xml
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\AgilaProject.exe
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\AgilaProject.pdb
