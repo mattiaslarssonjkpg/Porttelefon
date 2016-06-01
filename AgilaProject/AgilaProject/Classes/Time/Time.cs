@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-
 namespace AgilaProject.Time
 {
     public class KingTime

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
 
-namespace SocketProg
+namespace AgilaProject.Socket
 {
     internal class SocketServer
     {

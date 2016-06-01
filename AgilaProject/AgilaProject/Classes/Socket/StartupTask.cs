@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 // The Background Application template is documented at http://go.microsoft.com/fwlink/?LinkID=533884&clcid=0x409
 
-namespace SocketProg
+namespace AgilaProject.Socket
 {
     //public sealed class StartupTask : IBackgroundTask
     public class StartupTask

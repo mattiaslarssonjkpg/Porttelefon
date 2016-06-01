@@ -1,15 +1,24 @@
-﻿using AgilaProject.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using AgilaProject.InternetDependencies;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using static AgilaProject.InternetDependencies.HttpController;
+
+// Start ************** My includes ************
+using AgilaProject.Models;
+using static AgilaProject.InternetDependencies;
+using AgilaProject.InternetDependencies;
+using AgilaProject.Models;
+using AgilaProject.RFID;
+using AgilaProject.Time;
+using AgilaProject.Bluetooth;
+using AgilaProject.Socket;
+
+// Stop  ************** My includes ************
 
 namespace AgilaProject
 {

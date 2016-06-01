@@ -11,7 +11,7 @@ using Windows.Storage.Streams;
 using Windows.Devices.Enumeration;
 
 using System.Diagnostics;
-namespace Porttelefon
+namespace AgilaProject.Bluetooth
 {
     class BluetoothStream
     {
