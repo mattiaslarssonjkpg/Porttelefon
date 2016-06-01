@@ -1,1 +1,0 @@
-C:\Users\macka\Source\Repos\Porttelefon\Socket\SocketProg\SocketProg\SocketProg.csproj;x86
