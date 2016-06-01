@@ -1,20 +1,20 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Windows.Data.Json;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Net;
 
-namespace IoTCore.Httprequest
+namespace AgilaProject.InternetDependencies
 {
-    class HttpController {
-
+    public class HttpController {
         public class RegisterBindingModel {
-            public string Id { get; set; }
+            public String Id { get; set; }
+            public String TeacherEmail { get; set; }
+            public String Subject { get; set; }
+            public String StudentName { get; set; }
+            public String Content { get; set; }
         }
 
         /**
@@ -24,8 +24,9 @@ namespace IoTCore.Httprequest
          * OUTPUT        : - 
          * NOTE          : -
          */
-        public String ConvertToJson(String value) {
-            var person = new RegisterBindingModel { Id = value };
+        public String ConvertToJson(RegisterBindingModel content)
+        {
+            var person = new RegisterBindingModel { Id = content.Id , TeacherEmail = content.TeacherEmail, Content = content.Content, StudentName = content.StudentName};
             var JsonObj = JsonConvert.SerializeObject(person);
             return JsonObj;
         }
@@ -37,9 +38,9 @@ namespace IoTCore.Httprequest
          * OUTPUT        : String 
          * NOTE          : -
          */
-        public String ConvertFromJson(String value) {
+        public String ConvertFromJson(String value)
+        {
             var Lines = JsonConvert.DeserializeObject<RegisterBindingModel>(value);
-            //Console.WriteLine(t.ForeName + " " + t.SureName);
             return Lines.Id;
         }
 
@@ -51,7 +52,8 @@ namespace IoTCore.Httprequest
          * OUTPUT        : - 
          * NOTE          : -
          */
-        async Task<string> GetToken(string text, string serverAddress) {
+        public async Task<string> GetToken(string text, string serverAddress)
+        {
             var httpClient = new HttpClient();
 
             var parameters = new Dictionary<string, string>();
@@ -68,32 +70,32 @@ namespace IoTCore.Httprequest
          * OUTPUT        : - 
          * NOTE          : -
          */
-        public async void PostToServer(String jsonObj, String apiKey, String serverAddress) {
+        public async Task<string> PostToServer(String jsonObj, String serverAddress)
+        {
             var myClient = new HttpClient();
-
             var content = new StringContent(jsonObj);
 
-            myClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-
+            //myClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             HttpResponseMessage response = await myClient.PostAsync(serverAddress, content);
-
             // This tells if you if the client-server communication is actually using HTTP/2
-            Debug.WriteLine(response.Content.ReadAsStringAsync());
+            if(response.StatusCode == HttpStatusCode.OK)
+                return await response.Content.ReadAsStringAsync();
+            else return null;
 
         }
 
-        public async void GetFromServer(JsonObject jsonObj, String apiKey, String serverAddress) {
+        internal async Task<string> GetFromServer(String serverAddress)
+        {
             var myClient = new HttpClient();
 
-            //StringContent queryString = new StringContent(_data);
-            //myClient.PostAsync(_serveraddress, _data);
             HttpResponseMessage response = await myClient.GetAsync(serverAddress);
-            
-            // This tells if you if the client-server communication is actually using HTTP/2
-            Debug.WriteLine(response.Content.ReadAsStringAsync());
 
+            if (response.StatusCode == HttpStatusCode.OK)
+                return await response.Content.ReadAsStringAsync();
+            else return null;
+            // This tells if you if the client-server communication is actually using HTTP/2
         }
     }
 }
