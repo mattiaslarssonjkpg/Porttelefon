@@ -28,11 +28,12 @@ namespace Porttelefon
 #pragma warning disable 1998
     public sealed partial class MainPage : Page
     {
-        BluetoothStream MyBlueTooth = new BluetoothStream();
+        StartupTask _server = new StartupTask();
 
         public MainPage()
         {
             this.InitializeComponent();
+            Task.Run(_server.Run);
         }
 
         ~MainPage()
@@ -40,22 +41,5 @@ namespace Porttelefon
 
         }
 
-        private void btnConnect_Click(object sender, RoutedEventArgs e)
-        {
-            MyBlueTooth.InitialiceBluetooth();
-        }
-
-        private void btnSendData_Click(object sender, RoutedEventArgs e)
-        {
-            if (MyBlueTooth.deviceService != null)
-            {
-                txtBluetooth.Text = "Sucess";
-                MyBlueTooth.OpenDoor();
-            }
-            else
-            {
-                txtBluetooth.Text = "Failed";
-            }
-        }
     }
 }

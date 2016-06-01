@@ -27,9 +27,5 @@
                 </StackPanel>
             </Border>
         </StackPanel>
-        <Button x:Name="btnConnect" Content="Connect" HorizontalAlignment="Left" Margin="39,396,0,0" VerticalAlignment="Top" Height="65" Width="218" Click="btnConnect_Click"/>
-        <TextBox x:Name="txtBluetooth" HorizontalAlignment="Left" Margin="111,333,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" RenderTransformOrigin="0.38,0.469"/>
-        <Button x:Name="button2" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <Button x:Name="btnSendData" Content="Send data" HorizontalAlignment="Left" Margin="420,429,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Click="btnSendData_Click"/>
     </Grid>
 </Page>
