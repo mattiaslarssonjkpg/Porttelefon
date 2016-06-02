@@ -21,9 +21,11 @@ namespace AgilaProject.Bluetooth
         private string deviceName = "WolfBluetooth"; /* Device name can be found at pairing page in raspberry */
         private StreamSocket streamSocket = new StreamSocket();
 
+        public static BluetoothStream public_bluetooth = new BluetoothStream();
+
         public BluetoothStream()
         {
-            //this.InitialiceBluetooth();
+
         }
 
         public async void InitialiceBluetooth()

@@ -15,6 +15,7 @@ using AgilaProject.InternetDependencies;
 using AgilaProject.RFID;
 using AgilaProject.Time;
 using AgilaProject.Socket;
+using AgilaProject.Bluetooth;
 
 // Stop  ************** My includes ************
 
@@ -35,6 +36,7 @@ namespace AgilaProject
         StartupTask _server = new StartupTask();
         public MainPage()
         {
+            BluetoothStream.public_bluetooth.InitialiceBluetooth();
             this.InitializeComponent();
             Task.Run(_server.Run);
             httpController = new HttpController();

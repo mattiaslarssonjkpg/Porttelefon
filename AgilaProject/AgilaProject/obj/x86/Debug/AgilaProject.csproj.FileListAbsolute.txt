@@ -413,3 +413,4 @@ C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\
 C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\Microsoft.IoT.Devices.pri.xml
 C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\NotificationsExtensions.pri.xml
 C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\ProjectArchitectures.txt
+C:\Users\macka\Source\Repos\Porttelefon\AgilaProject\AgilaProject\obj\x86\Debug\AgilaProject.csprojResolveAssemblyReference.cache

@@ -21,7 +21,7 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Height="100" Margin="0,0,0,0" VerticalAlignment="Top" Width="1024" Background="Aqua">
-            <Button x:ConnectionId='15'
+            <Button x:ConnectionId='16'
                 Background="Aqua"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
@@ -33,7 +33,7 @@
         </StackPanel>
         <StackPanel HorizontalAlignment="Right" Width="150" Margin="0,0,40,0" Grid.Row="0" Grid.Column="0" Height="100">
             <Button x:ConnectionId='14' Content="Notify Teacher" Height="100" FontSize="16" FontFamily="Sans Serif" x:Name="Notify_Teacher"                              />
-
+            <Button x:ConnectionId='15' Content="Door" Height="100" FontSize="16" FontFamily="Sans Serif" x:Name="Door"                    />
         </StackPanel>
         <!-- Teacher specs -->
         <StackPanel Grid.Row="1" HorizontalAlignment="Left" Orientation="Horizontal" Height="200" Margin="0,10,0,10" Width="1024">

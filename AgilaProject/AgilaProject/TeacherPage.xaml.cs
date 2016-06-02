@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using static AgilaProject.InternetDependencies.HttpController;
+using AgilaProject.Bluetooth;
 
 namespace AgilaProject
 {
@@ -24,9 +25,9 @@ namespace AgilaProject
         internal HttpController httpController;
         internal String 
             MACAddress = null, 
-            Teacherstatus = "avaiable",
+            //Teacherstatus = "Busy",
             JsonObj = null;
-        internal Boolean isInit = true;
+        internal Boolean isInit = false;
         public TeacherPage()
         {
             this.InitializeComponent();
@@ -77,7 +78,7 @@ namespace AgilaProject
                                     MACAddress = BitConverter.ToString(RFIDReader.uid.uidByte);
                                     await coreApplikationView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                     () => {
-                                        if (TeacherAttributs.Status.ToLower() != Teacherstatus)
+                                        if (TeacherAttributs.Status.ToLower() == "busy")
                                         {
                                             InstructionsText.Text = "Teacher is " +  TeacherAttributs.Status +", Follow these instructions if you want to request meeting with teacher";
                                             StackPanelMail.Visibility = Visibility.Visible;
@@ -174,7 +175,12 @@ namespace AgilaProject
 
 
         }
-        
+
+        private void Door_Click(object sender, RoutedEventArgs e)
+        {
+            BluetoothStream.public_bluetooth.OpenDoor();
+        }
+
         private async void Notify_Teacher_Click(object sender, RoutedEventArgs e)
         {
             RegisterBindingModel registermodel = new RegisterBindingModel();
