@@ -10,28 +10,23 @@ using System.Diagnostics;
 
 // Start ************** My includes ************
 using AgilaProject.Models;
-//using  AgilaProject.InternetDependencies;
 using AgilaProject.InternetDependencies;
 using AgilaProject.RFID;
 using AgilaProject.Time;
 using AgilaProject.Socket;
 using AgilaProject.Bluetooth;
-
 // Stop  ************** My includes ************
 
 namespace AgilaProject
 {
     public sealed partial class MainPage : Page
     {
-        //private List<Teacher> ListViewTeachers;
         internal List<Teacher> TeachersList;
         internal String 
             httpGetAllTeachers = "http://193.10.30.154/DeveloperAPI/api/Users/1",
             httpGetSchedule = "http://193.10.30.154/DeveloperAPI",
             httpPostMail = "http://localhost:17877/api/mail/sendmail";
 
-
-        //internal static HttpController httpController;
         internal HttpController httpController;
         StartupTask _server = new StartupTask();
         public MainPage()
@@ -40,28 +35,9 @@ namespace AgilaProject
             this.InitializeComponent();
             Task.Run(_server.Run);
             httpController = new HttpController();
-
-            //IToastText01 trying_toast = ToastContentFactory.CreateToastText01();
-            //trying_toast.TextBodyWrap.Text = "Toast";
-            //ScheduledToastNotification giveTime = new ScheduledToastNotification(trying_toast.GetXml(), DateTime.Now.AddSeconds(2));
-            //giveTime.Id = "test";
-            //ToastNotificationManager.CreateToastNotifier().AddToSchedule(giveTime);
-            test();
             runTask();
         }
-        private  void test()
-        {
-            httpPostMail = "http://localhost:5998/api/Users/Mail/" + "4";
-            /*RegisterBindingModel registermodel = new RegisterBindingModel();
-            registermodel.StudentName = "Test";
-            registermodel.Subject = "Corridor Notification";
-            registermodel.Content = "is outside and wish you to open the door";
-            registermodel.Id = "4";
-            String JsonObj = httpController.ConvertToJson(registermodel);
-            String x = await httpController.PostToServer(JsonObj, httpPostMail);
-            Debug.WriteLine(x);
-            int y = 0;*/
-        }
+
         private void runTask()
         {
             Task t = Task.Run(async() =>
@@ -80,7 +56,6 @@ namespace AgilaProject
                         }
                     });
 
-                    Debug.Write("I was here");
                     await Task.Delay(TimeSpan.FromSeconds(5));
                 }
             });

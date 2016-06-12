@@ -21,7 +21,7 @@ namespace AgilaProject.Bluetooth
         private string deviceName = "WolfBluetooth"; /* Device name can be found at pairing page in raspberry */
         private StreamSocket streamSocket = new StreamSocket();
 
-        public static BluetoothStream public_bluetooth = new BluetoothStream();
+        public static BluetoothStream public_bluetooth = new BluetoothStream(); /* Open door can be used in diffrent files (classes) */
 
         public BluetoothStream()
         {
@@ -93,7 +93,7 @@ namespace AgilaProject.Bluetooth
             {
                 try
                 {
-                    string sendData = "Open door (Command)";
+                    string sendData = "Open door";
 
                     DataWriter dwriter = new DataWriter(streamSocket.OutputStream);
                     UInt32 len = dwriter.MeasureString(sendData);
@@ -109,7 +109,7 @@ namespace AgilaProject.Bluetooth
             }
             else
             {
-                Debug.WriteLine("Bluetooth is not connected correctl!");
+                Debug.WriteLine("Bluetooth is not connected correct!");
             }
 
         }
