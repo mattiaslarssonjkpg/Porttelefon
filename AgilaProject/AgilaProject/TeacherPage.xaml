@@ -1,0 +1,70 @@
+﻿<Page
+    x:Class="AgilaProject.TeacherPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AgilaProject"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="1024" Height="768">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Height="100" Margin="0,0,0,0" VerticalAlignment="Top" Width="1024" Background="Aqua">
+            <Button
+                Background="Aqua"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Click="Button_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="Assets/BackArrow.png" Margin="-10, 0, 0, 0" Width="100" Height="90"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Right" Width="150" Margin="0,0,40,0" Grid.Row="0" Grid.Column="0" Height="100">
+            <Button Content="Notify Teacher" Height="100" FontSize="16" FontFamily="Sans Serif" x:Name="Notify_Teacher" Click="Notify_Teacher_Click" />
+            <Button Content="Door" Height="100" FontSize="16" FontFamily="Sans Serif" x:Name="Door" Click="Door_Click" />
+        </StackPanel>
+        <!-- Teacher specs -->
+        <StackPanel Grid.Row="1" HorizontalAlignment="Left" Orientation="Horizontal" Height="200" Margin="0,10,0,10" Width="1024">
+            <Image Width="150" Height="200" x:Name="TeacherImage" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <StackPanel Margin="10,0,0,0" Width="230" Height="200">
+                <TextBlock x:Name="TeacherName" FontSize="16" HorizontalAlignment="Left" Height="60" Width="200" FontFamily="Sans Serif"/>
+                <TextBlock x:Name="TeacherStatus" FontSize="16" HorizontalAlignment="Left" Height="60" Width="200" FontFamily="Sans Serif"/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="2">
+            <TextBlock Height="20" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontFamily="Sans Serif" x:Name="InstructionsText" />
+        </StackPanel>
+        <!-- Book meeting -->
+        <StackPanel Grid.Row="3" Margin="10,10,10,0" x:Name="StackPanelMail">
+            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10" Height="30" FontSize="16" Text="Scan your Hj card: " FontFamily="Sans Serif" TextAlignment="Center" />
+            <TextBlock VerticalAlignment="Center" Height="30" FontSize="16" FontFamily="serif" Foreground="Black" Text="Hello world" x:Name="JuCard" Margin="0,10,0,10" TextAlignment="Center"/>
+            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" Height="30" FontSize="16" Text="Select requested date for the meeting: " TextAlignment="Center" FontFamily="Sans Serif" />
+            <CalendarDatePicker Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" FontFamily="Sans Serif" FontSize="16" Width="200" x:Name="CalenderPicker" Margin="0,10,40,10" />
+            <TimePicker Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" FontFamily="Sans Serif" FontSize="16" Width="200" x:Name="TimePicker" Margin="0,10,0,10" ClockIdentifier="24HourClock"  />
+            <Button Width="150" Height="40" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontFamily="Sans Serif" FontSize="16" Content="Book meeting" Margin="0,0,150,0" x:Name="Book_meeting" Click="Book_meeting_Click"/>
+        </StackPanel>
+        <StackPanel Grid.Row="4" Margin="10,10,10,0" x:Name="StackPanelIsMailSent" HorizontalAlignment="Center" Width="200">
+            <TextBlock x:Name="UserMessageIsMailSent" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10" Height="30" FontSize="16" FontFamily="Sans Serif" TextAlignment="Center" />
+            <StackPanel Grid.Row="4" Width="90" Grid.Column="0" HorizontalAlignment="Center">
+                <Button x:Name="isMailSentSend" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left" FontFamily="Sans Serif" FontSize="16" Margin="0,0,0,0" Click="isMailSent_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Row="4" Grid.Column="0" Width="90" HorizontalAlignment="Center">
+                <Button x:Name="isMailSentClose" Height="40" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="Sans Serif" FontSize="16" Margin="0,0,0,0" Click="isMailSent_Click"/>
+            </StackPanel>
+        </StackPanel>
+        
+
+    </Grid>
+</Page>
